@@ -11,18 +11,18 @@ const CHART_COLORS = {
   // separated by hue (blue / lilac / pink) rather than by lightness, so they
   // stay distinguishable for viewers with colour-vision deficiency and in
   // greyscale print.
-  primary: "#bdd2ff",
-  primaryDark: "#8fb7ff",
-  accent: "#f4c3e6",
-  secondary: "#cfbdff",
-  tertiary: "#f4c3e6",
+  primary: "#acc6ff",
+  primaryDark: "#7facff",
+  accent: "#f5afe2",
+  secondary: "#c6afff",
+  tertiary: "#f5afe2",
   border: "#434750",
   muted: "#8d909b",
-  danger: "#ffb4ab",
-  error: "#ffb4ab",
-  warning: "#f0c485",
-  success: "#a8d8b6",
-  primaryContainer: "#8fb7ff",
+  danger: "#ffa399",
+  error: "#ffa399",
+  warning: "#f4b44f",
+  success: "#8bd3a2",
+  primaryContainer: "#7facff",
   surface: "#1e1f24",
   onSurface: "#e3e1e9",
 };

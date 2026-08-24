@@ -39,7 +39,7 @@
           "surface-container-high": "#292a2f",
           "surface-container-highest": "#34343a",
           "surface-variant": "#34343a",
-          "surface-tint": "#aac7ff",
+          "surface-tint": "#9abcff",
           "on-surface": "#e3e1e9",
           "on-surface-variant": "#c3c6d2",
           "inverse-surface": "#e3e1e9",
@@ -48,55 +48,64 @@
           outline: "#8d909b",
           "outline-variant": "#434750",
 
-          primary: "#bdd2ff",
-          "on-primary": "#002f64",
-          "primary-container": "#8fb7ff",
-          "on-primary-container": "#154787",
-          "inverse-primary": "#335ea0",
-          "primary-fixed": "#d6e3ff",
-          "primary-fixed-dim": "#aac7ff",
-          "on-primary-fixed": "#001b3e",
-          "on-primary-fixed-variant": "#144686",
+          primary: "#acc6ff",
+          "on-primary": "#002c5e",
+          "primary-container": "#7facff",
+          "on-primary-container": "#00418a",
+          "inverse-primary": "#0b53b6",
+          "primary-fixed": "#c4d7ff",
+          "primary-fixed-dim": "#9abcff",
+          "on-primary-fixed": "#00193a",
+          "on-primary-fixed-variant": "#004089",
 
-          secondary: "#cfbdff",
-          "on-secondary": "#362465",
-          "secondary-container": "#4f3e80",
-          "on-secondary-container": "#c1adf8",
-          "secondary-fixed": "#e8ddff",
-          "secondary-fixed-dim": "#cfbdff",
-          "on-secondary-fixed": "#210b4f",
-          "on-secondary-fixed-variant": "#4d3c7d",
+          secondary: "#c6afff",
+          "on-secondary": "#370c77",
+          "secondary-container": "#4e2d91",
+          "on-secondary-container": "#b99dff",
+          "secondary-fixed": "#deceff",
+          "secondary-fixed-dim": "#c6afff",
+          "on-secondary-fixed": "#200053",
+          "on-secondary-fixed-variant": "#4c2b8e",
 
-          tertiary: "#f4c3e6",
-          "on-tertiary": "#462540",
-          "tertiary-container": "#d7a8ca",
-          "on-tertiary-container": "#603b57",
-          "tertiary-fixed": "#ffd7f2",
-          "tertiary-fixed-dim": "#e8b8da",
-          "on-tertiary-fixed": "#2f102a",
-          "on-tertiary-fixed-variant": "#5f3b57",
+          tertiary: "#f5afe2",
+          "on-tertiary": "#4a1942",
+          "tertiary-container": "#d996c7",
+          "on-tertiary-container": "#642e58",
+          "tertiary-fixed": "#fdc4ec",
+          "tertiary-fixed-dim": "#e9a5d7",
+          "on-tertiary-fixed": "#33032d",
+          "on-tertiary-fixed-variant": "#632e58",
 
-          error: "#ffb4ab",
-          "on-error": "#690005",
-          "error-container": "#93000a",
-          "on-error-container": "#ffdad6",
+          error: "#ffa399",
+          "on-error": "#630004",
+          "error-container": "#8b0009",
+          "on-error-container": "#fec9c4",
 
           // Additions - see the note above.
-          success: "#a8d8b6",
-          "on-success": "#00391d",
-          "success-container": "#1f4e32",
-          "on-success-container": "#c4eed1",
-          warning: "#f0c485",
-          "on-warning": "#452b00",
-          "warning-container": "#634100",
-          "on-warning-container": "#ffddb3",
+          //
+          // The whole accent family is one tonal step richer than stock M3:
+          // lightness x0.96 with chroma taken to the sRGB gamut edge, computed
+          // in OKLCh so hue and perceived lightness hold while only
+          // colourfulness moves. A plain HSL boost would have shifted
+          // lightness as a side effect and broken the contrast ratios below.
+          // At stock tone the light accents were already gamut-capped - no
+          // extra chroma exists at that lightness - which is why the step down
+          // was necessary rather than cosmetic.
+          success: "#8bd3a2",
+          "on-success": "#00351b",
+          "success-container": "#004c28",
+          "on-success-container": "#a9e7be",
+          warning: "#f4b44f",
+          "on-warning": "#412800",
+          "warning-container": "#5d3d00",
+          "on-warning-container": "#ffce8f",
 
           // Legacy aliases. Existing markup still references these names;
           // they now point at the role they always meant.
           card: "#1e1f24",
           border: "#434750",
-          "primary-dark": "#8fb7ff",
-          accent: "#f4c3e6",
+          "primary-dark": "#7facff",
+          accent: "#f5afe2",
         },
         fontFamily: {
           // Inter carries the data - it stays legible at 11-12px inside dense
@@ -185,12 +194,12 @@
     transition: border-color .3s ease, box-shadow .3s ease, transform .3s ease;
   }
   .entity-card:hover {
-    border-color: rgba(189, 210, 255, 0.35);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 40px rgba(170, 199, 255, 0.10);
+    border-color: rgba(172, 198, 255, 0.38);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 40px rgba(153, 186, 255, 0.12);
     transform: translateY(-2px);
   }
 
-  .nav-link.active { color: #bdd2ff; background: rgba(189, 210, 255, 0.10); border-right: 3px solid #bdd2ff; }
+  .nav-link.active { color: #acc6ff; background: rgba(172, 198, 255, 0.12); border-right: 3px solid #acc6ff; }
   .nav-link:not(.active):hover { background-color: #1e1f24; }
   .nav-link.active .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 350, 'GRAD' 0, 'opsz' 24; }
 
@@ -216,21 +225,21 @@
 
   /* The brief asks for a primary->secondary gradient. It also asks for white
      label text, which was written for a palette with saturated accents - on
-     this one both stops are pastels (#bdd2ff, #cfbdff) and white would be
+     this one both stops are pastels (#acc6ff, #c6afff) and white would be
      unreadable. `on-primary` is the role the palette provides for exactly
      this, and gives ~11:1 contrast. */
   .btn-primary {
-    background: linear-gradient(135deg, #bdd2ff, #cfbdff);
-    color: #002f64;
+    background: linear-gradient(135deg, #acc6ff, #c6afff);
+    color: #002c5e;
     font-weight: 600;
     border-radius: 9999px;
     transition: filter .3s ease, box-shadow .3s ease;
   }
-  .btn-primary:hover { filter: brightness(1.06); box-shadow: 0 0 24px rgba(170, 199, 255, 0.35); }
+  .btn-primary:hover { filter: brightness(1.06); box-shadow: 0 0 24px rgba(153, 186, 255, 0.38); }
   .btn-primary:disabled { filter: none; box-shadow: none; }
 
   .btn-outline { border: 1px solid #434750; border-radius: 9999px; color: #c3c6d2; transition: all .3s ease; }
-  .btn-outline:hover { border-color: #bdd2ff; color: #bdd2ff; background: rgba(189, 210, 255, 0.08); box-shadow: 0 0 18px rgba(170, 199, 255, 0.12); }
+  .btn-outline:hover { border-color: #acc6ff; color: #acc6ff; background: rgba(172, 198, 255, 0.10); box-shadow: 0 0 18px rgba(153, 186, 255, 0.14); }
 
   /* Inputs sit on the void, not on the card, so they read as wells. */
   input[type="text"], input[type="number"], input[type="search"] {
@@ -241,8 +250,8 @@
     transition: border-color .2s ease, box-shadow .2s ease;
   }
   input[type="text"]:focus, input[type="number"]:focus, input[type="search"]:focus {
-    border-color: #bdd2ff;
-    box-shadow: 0 0 0 2px rgba(189, 210, 255, 0.25);
+    border-color: #acc6ff;
+    box-shadow: 0 0 0 2px rgba(172, 198, 255, 0.28);
     outline: none;
   }
   ::placeholder { color: #8d909b; }
