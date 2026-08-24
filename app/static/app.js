@@ -208,7 +208,10 @@ const LIST_VIEW_LABELS = {
   evaluation: "Back to Evaluation",
 };
 
-function switchView(view) {
+// `refresh` exists only for runSearch: it calls switchView to bring the
+// Citizens view forward, and would otherwise be re-entered by the directory
+// branch below, firing the same query twice.
+function switchView(view, { refresh = true } = {}) {
   document.querySelectorAll(".view").forEach((el) => el.classList.remove("active"));
   document.getElementById(`view-${view}`).classList.add("active");
 
@@ -221,7 +224,12 @@ function switchView(view) {
   }
 
   if (view === "dashboard") { loadDashboard(); loadServiceCoverageSummary(); }
-  if (view === "directory") loadEngagementSummary();
+  if (view === "directory") {
+    loadEngagementSummary();
+    // navigate:false - switchView is already mid-flight, and runSearch would
+    // otherwise call back into it.
+    if (refresh) runSearch(document.getElementById("search-input").value, { navigate: false });
+  }
   if (view === "review") loadReviewQueue();
   if (view === "evaluation") loadEvaluation();
 }
@@ -446,7 +454,7 @@ let directoryLimit = DIRECTORY_PAGE_SIZE;
 
 async function runSearch(query, { navigate = true, resetLimit = true } = {}) {
   lastListView = "directory";
-  if (navigate) switchView("directory");
+  if (navigate) switchView("directory", { refresh: false });
   if (resetLimit) directoryLimit = DIRECTORY_PAGE_SIZE;
 
   const empty = document.getElementById("directory-empty");
@@ -457,6 +465,7 @@ async function runSearch(query, { navigate = true, resetLimit = true } = {}) {
   const trimmed = query.trim();
   empty.textContent = trimmed ? "Searching..." : "Loading profiles...";
   empty.classList.remove("hidden");
+  rows.innerHTML = "";
   table.classList.add("hidden");
   caption.classList.add("hidden");
   showMoreBtn.classList.add("hidden");
@@ -1068,6 +1077,10 @@ async function loadQualityCharts() {
   try {
     q = await api("/quality");
   } catch (e) {
+    // Leaving the previous charts up would show the last linkage run's
+    // distributions as though they were current.
+    destroyChart("confidence");
+    destroyChart("clusterSize");
     return;
   }
 
@@ -1158,6 +1171,7 @@ async function loadReviewQueue() {
     // that this has to name the step actually outstanding rather than pointing
     // at a button that would fail.
     grid.innerHTML = "";
+    document.getElementById("anomaly-rows").innerHTML = "";
     empty.innerHTML = pipelineNotice(e, { compact: true });
     empty.classList.remove("hidden");
     content.classList.add("hidden");
@@ -1873,6 +1887,7 @@ async function loadEvaluation() {
       renderSweepNotes(data);
     })
     .catch((e) => {
+      destroyChart("thresholdSweep");
       document.getElementById("evaluation-sweep-notes").innerHTML = pipelineNotice(e, { compact: true });
     });
 
