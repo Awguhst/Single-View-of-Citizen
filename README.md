@@ -245,8 +245,19 @@ right way round for something deployed far less often than it is started.
   `app/requirements.txt`. It is the single most important line in that file.
   It also excludes `data/`, so a stale local database cannot override the one
   built into the image.
-* **`$PORT` is honoured.** Railway injects it; the `CMD` falls back to 8000
-  so plain `docker run -p 8000:8000 citizenlink` also works.
+* **`$PORT` is honoured, and the start command lives only in the
+  `Dockerfile`.** Railway injects `$PORT`; the `CMD` expands it via `sh -c`
+  and falls back to 8000, so a plain `docker run -p 8000:8000 citizenlink`
+  works too.
+
+  Do **not** add a `startCommand` to `railway.json`. It overrides the image's
+  `CMD` and is delivered to the container *without shell expansion*, so
+  `--port $PORT` reaches uvicorn as the four literal characters `$PORT` and
+  the container crash-loops with
+  `Error: Invalid value for '--port': '$PORT' is not a valid integer`. This
+  repo hit exactly that; the fix was deleting `startCommand` so there is one
+  shell-expanded definition in one place. Verified by running the image with
+  `-e PORT=9123` on a non-default port.
 * **`CITIZENLINK_DB_PATH`** controls where the DuckDB file lives (the image
   sets `/data/svoc.duckdb`). Point it at a mounted volume if you ever want
   generated data to survive a redeploy - though for this demo, rebuilding
@@ -408,9 +419,27 @@ Swagger UI at `/docs` or the ReDoc view at `/redoc`.
 
 Every random choice in `data_generator.py` and `splink_service.py` is seeded
 (`SEED = 6999`), so `POST /generate-data` followed by `POST /run-linkage`
-produces identical results on every run and every machine - including which
-agencies each citizen is sampled into (`_sample_agencies` draws from the
-same shared seeded RNG, never Python's unseeded global `random`).
+produces identical results on every run **on a given platform** - including
+which agencies each citizen is sampled into (`_sample_agencies` draws from
+the same shared seeded RNG, never Python's unseeded global `random`).
+
+**Known limitation - the dataset is not identical across platforms.**
+`faker.date_of_birth()` returns different values on Windows and Linux for
+the same seed and the same Faker version (verified: 1991-05-03 vs
+1981-01-24 on a fresh seed with no other calls). Because a different date of
+birth changes which branch `_vary_first_name` takes, and therefore how many
+draws it consumes, the entire downstream sequence shifts. The Linux
+container generates 74,811 records / 10,037 clusters where Windows
+generates 74,955 / 10,044, moving the headline F1 from 0.9991 to 0.9986.
+The conclusions are unaffected - the model still beats every baseline by the
+same margin - but the exact figures in this README are the Windows ones.
+
+The fix, if this matters to you, is to stop using Faker's
+`date_of_birth()` (which derives from the host's "today") and sample the
+date of birth from `AS_OF_DATE` with the shared seeded RNG - exactly what
+every *record* date already does, and why `AS_OF_DATE` exists. That would
+change the dataset, and therefore every figure quoted here, so it is called
+out rather than done silently.
 
 Splink resolves records from all eleven agencies together in one pool - every
 row of the unified `records` table, distinguished by `record_type` - so a
@@ -422,11 +451,25 @@ pipeline currently resolves:
   clusters (**~64,500** duplicates found)
 * **~100%** average per-record match confidence
 
-The one exception to full reproducibility is a citizen profile's `age`
-field, which is computed at read time against the real current date (not
-a frozen seed value) - see [Design boundary](#design-boundary-no-risk-or-likelihood-scoring)
-below for why, and expect it to increment by one on a citizen's real
-birthday even with no data regenerated.
+`faker` is nonetheless pinned to an exact version in
+`app/requirements.txt` rather than a floor, since a version bump would
+redraw the whole population on top of the platform difference above.
+`duckdb` and `splink` are still ranges; a patch bump there can move the
+linkage figures in the last decimal place without changing any conclusion.
+
+Two things are deliberately *not* reproducible:
+
+* A citizen profile's `age`, computed at read time against the real current
+  date rather than a frozen seed value - see
+  [Design boundary](#design-boundary-no-risk-or-likelihood-scoring) below
+  for why. Expect it to increment on a citizen's real birthday with no data
+  regenerated.
+* Nothing else. In particular, the Review Queue's model was a reproducibility
+  bug until recently: its feature query had no `ORDER BY`, and because
+  Isolation Forest subsamples its training rows, DuckDB's hash-join ordering
+  (which differs between database files) changed which citizens were flagged
+  - 501 vs 486 on byte-identical clusters. It is sorted now, with a
+  regression test.
 
 ## Design boundary: no risk or likelihood scoring
 

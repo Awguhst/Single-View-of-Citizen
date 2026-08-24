@@ -40,6 +40,13 @@ RUN python -m app.bootstrap
 
 EXPOSE 8000
 
-# Railway injects $PORT; default to 8000 for plain `docker run`.
-# Shell form so $PORT is expanded at runtime rather than baked in.
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+# Railway injects $PORT; default to 8000 for a plain `docker run`.
+#
+# `sh -c` is explicit rather than relying on Docker's shell form, and the
+# start command deliberately lives ONLY here - not in railway.json. Railway's
+# `startCommand` overrides this CMD and is passed to the container without
+# shell expansion, so a `--port $PORT` written there arrives at uvicorn as the
+# four literal characters "$PORT" and the container crash-loops with
+# "Invalid value for '--port'". Keeping one shell-expanded definition in one
+# place is what stops that recurring.
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

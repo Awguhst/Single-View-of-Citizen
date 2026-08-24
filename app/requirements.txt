@@ -4,7 +4,14 @@ pydantic>=2.7,<3.0
 duckdb>=1.1,<2.0
 splink>=4.0.10,<5.0
 pandas>=2.1
-faker>=24.0
+# Pinned exactly, not a floor: Faker's name/address pools change between
+# releases, so a version bump silently redraws the whole population.
+#
+# Note this pin is NOT sufficient for cross-platform reproducibility - see
+# "Reproducibility" in README.md. `faker.date_of_birth()` returns different
+# values on Windows and Linux for the same seed and version, which is why
+# the container's dataset differs from a Windows-generated one.
+faker==40.23.0
 numpy>=1.26
 scikit-learn>=1.4,<2.0
 reportlab>=4.0,<5.0
