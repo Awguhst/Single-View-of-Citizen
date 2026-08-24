@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CitizenLink | Single View of Citizen</title>
+<link rel="icon" href="data:," />
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          // - existing keys, kept (existing markup depends on these names) ---
+          // Cybercrime.bg-inspired navy/slate + electric-blue palette.
+          background: "#020617",
+          surface: "#0f172a",
+          "surface-container": "#1e293b",
+          "surface-container-high": "#334155",
+          card: "#0f172a",
+          border: "#334155",
+          primary: "#47a8f6",
+          "primary-dark": "#0055ff",
+          accent: "#ff0000",
+          "on-surface": "#e2e8f0",
+          "on-surface-variant": "#94a3b8",
+
+          // - additive Material 3 tokens (same seed color/theme) ---
+          "primary-container": "#0055ff",
+          "on-primary": "#ffffff",
+          "on-primary-container": "#ffffff",
+          "on-primary-fixed": "#00133d",
+          "on-primary-fixed-variant": "#003ea8",
+          "primary-fixed": "#cfe4ff",
+          "primary-fixed-dim": "#47a8f6",
+          "inverse-primary": "#0055ff",
+          "surface-tint": "#47a8f6",
+
+          secondary: "#94a3b8",
+          "on-secondary": "#0f172a",
+          "secondary-container": "#334155",
+          "on-secondary-container": "#cbd5e1",
+          "secondary-fixed": "#cbd5e1",
+          "secondary-fixed-dim": "#94a3b8",
+          "on-secondary-fixed-variant": "#334155",
+
+          tertiary: "#38bdf8",
+          "on-tertiary": "#00293d",
+          "tertiary-container": "#075985",
+          "on-tertiary-container": "#e0f2fe",
+          "tertiary-fixed": "#bae6fd",
+          "tertiary-fixed-dim": "#38bdf8",
+          "on-tertiary-fixed": "#001f2e",
+          "on-tertiary-fixed-variant": "#0c4a6e",
+
+          error: "#f87171",
+          "on-error": "#450a0a",
+          "error-container": "#7f1d1d",
+          "on-error-container": "#fecaca",
+
+          outline: "#475569",
+          "outline-variant": "#1e293b",
+          "surface-variant": "#1e293b",
+          "surface-dim": "#020617",
+          "surface-bright": "#334155",
+          "surface-container-lowest": "#020617",
+          "surface-container-low": "#1e293b",
+          "surface-container-highest": "#475569",
+          "inverse-surface": "#e2e8f0",
+          "inverse-on-surface": "#1e293b",
+        },
+        fontFamily: {
+          sans: ["Montserrat", "sans-serif"],
+          "body-md": ["Montserrat"],
+          "body-lg": ["Montserrat"],
+          "display-lg": ["Montserrat"],
+          "display-lg-mobile": ["Montserrat"],
+          "headline-md": ["Montserrat"],
+          "title-lg": ["Montserrat"],
+          "numeric-data": ["Montserrat"],
+          "label-caps": ["Montserrat"],
+        },
+        fontSize: {
+          "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+          "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+          "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+          "display-lg-mobile": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+          "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+          "title-lg": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+          "numeric-data": ["18px", { lineHeight: "24px", fontWeight: "500" }],
+          "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
+        },
+        spacing: {
+          gutter: "24px",
+          "card-gap": "16px",
+          base: "8px",
+          "desktop-max-width": "1440px",
+          "container-padding": "32px",
+        },
+        borderRadius: {
+          DEFAULT: "0.25rem",
+          lg: "0.75rem",
+          xl: "1rem",
+          "2xl": "1.5rem",
+          // "full" intentionally omitted - keep Tailwind's true-circle default
+          // (9999px) so avatar circles / legend dots stay round.
+        },
+        animation: {
+          "pulse-slow": "pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        },
+      },
+    },
+  };
+</script>
+<style>
+  body { background-color: #020617; color: #e2e8f0; font-family: 'Montserrat', sans-serif; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 24; font-size: 20px; vertical-align: middle; }
+  .entity-card { background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(16px); border: 1px solid rgba(71, 168, 246, 0.15); transition: all .3s ease; }
+  .entity-card:hover { border-color: rgba(71, 168, 246, 0.4); box-shadow: 0 0 30px rgba(71, 168, 246, 0.12); transform: translateY(-2px); }
+  .nav-link.active { color: #47a8f6; background: rgba(71, 168, 246, 0.1); border-right: 3px solid #47a8f6; }
+  .nav-link:not(.active):hover { background-color: #1e293b; }
+  .nav-link.active .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 350, 'GRAD' 0, 'opsz' 24; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #020617; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+  .skeleton { background: linear-gradient(90deg, #0f172a 25%, #1e293b 50%, #0f172a 75%); background-size: 200% 100%; animation: loading 1.4s infinite; }
+  @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .view { display: none; }
+  .view.active { display: block; }
+  .badge { display: inline-block; white-space: nowrap; font-size: 10px; padding: 2px 8px; border-radius: 9999px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; }
+  .toast { transition: opacity .3s ease, transform .3s ease; }
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::marker { display: none; }
+  .btn-primary { background: linear-gradient(135deg, #47a8f6, #0055ff); color: #fff; border-radius: 9999px; transition: all .3s ease; box-shadow: 0 0 0 rgba(71,168,246,0); }
+  .btn-primary:hover { filter: brightness(1.1); box-shadow: 0 0 20px rgba(71,168,246,0.4); }
+  .btn-outline { border: 1px solid #334155; border-radius: 9999px; transition: all .3s ease; }
+  .btn-outline:hover { border-color: #47a8f6; background: rgba(71,168,246,0.08); box-shadow: 0 0 15px rgba(71,168,246,0.15); }
+</style>
+</head>
+<body class="flex min-h-screen">
+
+<div id="app-shell" class="w-full">
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface/80 backdrop-blur-xl border-r border-outline-variant flex flex-col py-6 z-50">
+  <div class="px-6 pb-6">
+    <h1 class="text-xl font-bold text-primary">CitizenLink</h1>
+    <p class="text-on-surface-variant text-sm">Single View of Citizen</p>
+  </div>
+  <nav class="flex-1 px-3 space-y-1">
+    <button data-view="dashboard" class="nav-link active w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-on-surface-variant transition-colors text-left">
+      <span class="material-symbols-outlined mt-0.5">dashboard</span>
+      <span>Overview<span class="block text-[10px] font-normal opacity-60">What does the population look like?</span></span>
+    </button>
+    <button data-view="directory" class="nav-link w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-on-surface-variant transition-colors text-left">
+      <span class="material-symbols-outlined mt-0.5">folder_shared</span>
+      <span>Citizens<span class="block text-[10px] font-normal opacity-60">Find and inspect a person</span></span>
+    </button>
+    <button data-view="review" class="nav-link w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-on-surface-variant transition-colors text-left">
+      <span class="material-symbols-outlined mt-0.5">rule</span>
+      <span>Review Queue<span class="block text-[10px] font-normal opacity-60">What needs a human?</span></span>
+    </button>
+    <button data-view="evaluation" class="nav-link w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-on-surface-variant transition-colors text-left">
+      <span class="material-symbols-outlined mt-0.5">science</span>
+      <span>Evaluation<span class="block text-[10px] font-normal opacity-60">Is the system working?</span></span>
+    </button>
+  </nav>
+  <div class="px-4 pt-4 border-t border-outline-variant/30 space-y-3">
+    <a href="/docs" class="flex items-center gap-3 px-3 py-2 text-on-surface-variant font-medium hover:text-primary transition-colors text-sm">
+      <span class="material-symbols-outlined text-base">description</span> API Docs
+    </a>
+  </div>
+</aside>
+
+<main class="ml-64 flex-1 flex flex-col min-w-0">
+  <header class="flex justify-between items-center w-full px-8 h-16 bg-surface/80 backdrop-blur-xl border-b border-outline-variant sticky top-0 z-40 gap-6">
+    <div class="relative max-w-md w-full flex items-center bg-surface-container-low border border-outline-variant rounded-lg px-1">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+      <input id="search-input" type="text" placeholder="Search resolved citizens, e.g. 'john smith'"
+        class="w-full bg-transparent border-none pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-0 transition-colors" />
+    </div>
+    <div class="flex items-center gap-6 shrink-0">
+      <div class="flex items-center gap-4 text-on-surface-variant">
+        <button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+        <button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">history</span></button>
+        <button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">chat</span></button>
+      </div>
+      <div class="h-8 w-[1px] bg-outline-variant"></div>
+      <div class="flex items-center gap-3">
+        <button id="btn-generate" class="btn-outline px-4 py-2 text-xs font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-base">database</span> Generate Data
+        </button>
+        <button id="btn-linkage" class="btn-primary px-4 py-2 text-xs font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-base">play_arrow</span> Run Linkage
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="toast" class="toast fixed top-20 right-8 z-50 opacity-0 pointer-events-none"></div>
+
+  <div class="p-8 w-full space-y-6">
+
+    <!-- OVERVIEW -->
+    <section id="view-dashboard" class="view active space-y-6 max-w-[1440px] mx-auto w-full">
+      <div>
+        <h2 class="text-2xl font-bold text-on-surface">Overview</h2>
+        <p class="text-on-surface-variant text-sm">Resolved citizen identities and government service participation across all agencies</p>
+      </div>
+
+      <div class="entity-card rounded-lg p-5 border-l-2 border-l-primary">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-primary text-base mt-0.5">info</span>
+          <div class="text-xs text-on-surface-variant leading-relaxed">
+            <span class="font-semibold text-on-surface">Everything here is synthetic.</span>
+            Eleven government agencies each hold their own records of the same people, with no shared ID and the
+            usual data-quality problems. The pipeline links those records into one profile per citizen. This page
+            shows the shape of the result; <span class="font-medium text-on-surface">Evaluation</span> shows how
+            accurate it is.
+          </div>
+        </div>
+      </div>
+
+      <div id="kpi-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+      <div>
+        <h3 class="text-lg font-bold text-on-surface">Entity Resolution In Action</h3>
+        <p class="text-on-surface-variant text-sm">One resolved cluster from the live dataset, before and after linking</p>
+      </div>
+      <div id="showcase-content"></div>
+
+      <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 lg:col-span-7 entity-card rounded-lg p-6">
+          <h3 class="text-base font-semibold mb-1">Citizens by Engagement Tier</h3>
+          <p class="text-on-surface-variant text-xs mb-4">Resolved citizens grouped by how many agencies are linked to them</p>
+          <div class="h-64 relative">
+            <canvas id="chart-engagement"></canvas>
+            <p id="chart-engagement-empty" class="hidden absolute inset-0 flex items-center justify-center text-center text-on-surface-variant text-sm px-6"></p>
+          </div>
+        </div>
+        <div class="col-span-12 lg:col-span-5 entity-card rounded-lg p-6">
+          <h3 class="text-base font-semibold mb-1">Government Records by Agency</h3>
+          <p class="text-on-surface-variant text-xs mb-4">Source records contributed by each agency</p>
+          <div class="h-64"><canvas id="chart-agencies"></canvas></div>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <h3 class="text-lg font-bold text-on-surface">Service Coverage Gaps</h3>
+        <p class="text-on-surface-variant text-sm">
+          How many resolved citizens have no on-file record with each of 8 illustrative services. A plain count
+          over the whole population - not a prediction about anyone. To see one citizen's gaps ranked by how
+          common each service is among comparable citizens, open their profile.
+        </p>
+      </div>
+
+      <div id="service-coverage-kpi-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+      <div class="entity-card rounded-lg p-6">
+        <h3 class="text-base font-semibold mb-1">Citizens Missing Each Service</h3>
+        <p class="text-on-surface-variant text-xs mb-4">Across the full resolved population</p>
+        <div class="h-64"><canvas id="chart-service-coverage"></canvas></div>
+      </div>
+    </section>
+
+    <!-- CITIZENS -->
+    <section id="view-directory" class="view space-y-6">
+      <div class="flex justify-between items-center gap-4 flex-wrap">
+        <div>
+          <h2 class="text-2xl font-bold text-on-surface">Citizens</h2>
+          <p class="text-on-surface-variant text-sm">
+            Search resolved profiles by name, or browse the engagement segments below. Open any citizen to see
+            their full record dossier, why their records were linked, and their service-coverage gaps.
+          </p>
+        </div>
+        <button id="btn-export-directory" class="btn-outline px-4 py-2 text-xs font-semibold flex items-center gap-2 shrink-0">
+          <span class="material-symbols-outlined text-base">download</span> Export CSV
+        </button>
+      </div>
+
+      <div id="directory-engagement-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+      <div class="entity-card rounded-lg overflow-hidden">
+        <div id="directory-empty" class="p-12 text-center text-on-surface-variant text-sm">
+          Loading profiles...
+        </div>
+        <div class="overflow-x-auto">
+          <p id="directory-caption" class="px-5 py-3 text-xs text-on-surface-variant border-b border-border"></p>
+          <table id="directory-table" class="w-full text-left hidden">
+            <thead>
+              <tr class="bg-surface-container-high text-on-surface-variant text-[10px] uppercase tracking-wider">
+                <th class="px-5 py-3">Citizen ID</th>
+                <th class="px-5 py-3">Name</th>
+                <th class="px-5 py-3">Agencies</th>
+                <th class="px-5 py-3">Engagement Tier</th>
+                <th class="px-5 py-3">Coverage Gaps</th>
+                <th class="px-5 py-3 text-center">Detail</th>
+              </tr>
+            </thead>
+            <tbody id="directory-rows" class="divide-y divide-border/60"></tbody>
+          </table>
+        </div>
+        <div class="p-4 border-t border-border flex justify-center">
+          <button id="btn-directory-show-more" class="btn-outline px-4 py-2 text-xs font-semibold hidden">Show More</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- REVIEW QUEUE -->
+    <section id="view-review" class="view space-y-6 max-w-[1440px] mx-auto w-full">
+      <div class="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h2 class="text-2xl font-bold text-on-surface">Review Queue</h2>
+          <p class="text-on-surface-variant text-sm max-w-3xl">
+            Resolved profiles worth a second look, worst first. An Isolation Forest ranks profiles by how unusual
+            their <em>linkage pattern</em> is - never their demographics - and each row shows both what
+            the model reacted to and the actual conflicting values a reviewer can act on.
+          </p>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <div>
+            <label for="anomaly-contamination" class="block text-[11px] uppercase tracking-wider text-on-surface-variant font-semibold mb-1">Contamination</label>
+            <input id="anomaly-contamination" type="number" min="0.01" max="0.5" step="0.01" value="0.05"
+              class="w-24 bg-surface-container-high border border-border rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none transition-colors" />
+          </div>
+          <button id="btn-run-anomaly" class="btn-primary px-4 py-2 text-xs font-semibold flex items-center gap-2 self-end">
+            <span class="material-symbols-outlined text-base">play_arrow</span> Run Analysis
+          </button>
+        </div>
+      </div>
+
+      <div id="anomaly-kpi-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+      <div class="entity-card rounded-lg p-5 border-l-2 border-l-primary">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-primary text-base mt-0.5">lightbulb</span>
+          <div class="text-xs text-on-surface-variant leading-relaxed">
+            <span class="font-semibold text-on-surface">What you are actually looking at.</span>
+            On this dataset an "unusual profile" is almost always a <em>linkage artefact</em> rather than an unusual
+            citizen - two people merged into one profile, or one person split across several. Measured against
+            the known ground truth, this ranking surfaces
+            <span class="font-medium text-on-surface">61% of all real linkage errors inside the top 5%</span> of the
+            population (25x better than picking at random). The old "lowest match confidence" queue was dropped
+            because confidence is effectively constant here - it ranked on noise. See
+            <span class="font-medium text-on-surface">Evaluation</span> for that comparison.
+          </div>
+        </div>
+      </div>
+
+      <div id="anomaly-empty" class="entity-card rounded-lg p-12 text-center text-on-surface-variant text-sm">
+        No results yet - click "Run Analysis" to rank the current resolved profiles.
+      </div>
+
+      <div id="anomaly-content" class="hidden space-y-6">
+        <div class="grid grid-cols-12 gap-6">
+          <div class="col-span-12 lg:col-span-6 entity-card rounded-lg p-6">
+            <h3 class="text-base font-semibold mb-1">Anomaly Score Distribution</h3>
+            <p class="text-on-surface-variant text-xs mb-4">Every analyzed profile's normalized anomaly score (0-100, higher = more anomalous)</p>
+            <div class="h-56"><canvas id="chart-anomaly-distribution"></canvas></div>
+          </div>
+          <div class="col-span-12 lg:col-span-6 entity-card rounded-lg p-6">
+            <h3 class="text-base font-semibold mb-1">Normal vs. Anomalous</h3>
+            <p class="text-on-surface-variant text-xs mb-4">Share of analyzed profiles flagged anomalous at the current contamination</p>
+            <div class="h-56"><canvas id="chart-anomaly-split"></canvas></div>
+          </div>
+        </div>
+
+        <div class="entity-card rounded-lg overflow-hidden">
+          <div class="p-6 border-b border-border">
+            <h3 class="text-base font-semibold">Profiles To Review</h3>
+            <p class="text-on-surface-variant text-xs">
+              Most anomalous first. Each reason is measured by neutralising that one feature against the fitted
+              model and seeing how far the score falls - a counterfactual on the real model, not a proxy.
+              See Model Evaluation for how well this detector actually finds linkage errors.
+            </p>
+          </div>
+          <div class="overflow-x-auto">
+            <p id="anomaly-caption" class="px-5 py-3 text-xs text-on-surface-variant border-b border-border"></p>
+            <table class="w-full text-left">
+              <thead>
+                <tr class="bg-surface-container-high text-on-surface-variant text-[10px] uppercase tracking-wider">
+                  <th class="px-5 py-3">Citizen ID</th>
+                  <th class="px-5 py-3">Name</th>
+                  <th class="px-5 py-3 text-center">Agencies</th>
+                  <th class="px-5 py-3 text-center">Records</th>
+                  <th class="px-5 py-3">What The Model Reacted To</th>
+                  <th class="px-5 py-3">Conflicting Values On File</th>
+                  <th class="px-5 py-3 text-center">Score</th>
+                  <th class="px-5 py-3 text-center">Detail</th>
+                </tr>
+              </thead>
+              <tbody id="anomaly-rows" class="divide-y divide-border/60"></tbody>
+            </table>
+          </div>
+          <div class="p-4 border-t border-border flex justify-center">
+            <button id="btn-anomaly-show-more" class="btn-outline px-4 py-2 text-xs font-semibold hidden">Show More</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EVALUATION -->
+    <section id="view-evaluation" class="view space-y-6 max-w-[1440px] mx-auto w-full">
+      <div>
+        <h2 class="text-2xl font-bold text-on-surface">Model Evaluation</h2>
+        <p class="text-on-surface-variant text-sm">
+          Every model in this application, scored against the synthetic ground truth
+        </p>
+      </div>
+
+      <div class="entity-card rounded-lg p-5 border-l-2 border-l-primary">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-primary text-base mt-0.5">science</span>
+          <div class="text-xs text-on-surface-variant leading-relaxed">
+            <span class="font-semibold text-on-surface">Why these numbers can exist at all.</span>
+            The data is synthetic, so the true identity behind every record is known
+            (<span class="font-mono">records.person_index</span>). The linkage pipeline never sees it - it
+            resolves identity from noisy fields alone, exactly as a production system would - but this page
+            can use it afterwards to check the result. These are the only endpoints in the application that read
+            ground truth; no citizen-facing page depends on them.
+          </div>
+        </div>
+      </div>
+
+      <div id="evaluation-kpi-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+      <!-- Baselines -->
+      <div class="entity-card rounded-lg overflow-hidden">
+        <div class="p-6 border-b border-border">
+          <h3 class="text-base font-semibold">Is the model beating a hand-written rule?</h3>
+          <p class="text-on-surface-variant text-xs">
+            An F1 in isolation says nothing. Each baseline below is a deterministic rule someone would reach for
+            before installing a probabilistic linkage engine; the two degenerate rows bracket the scale.
+          </p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="bg-surface-container-high text-on-surface-variant text-[10px] uppercase tracking-wider">
+                <th class="px-5 py-3">Method</th>
+                <th class="px-5 py-3 text-center">Precision</th>
+                <th class="px-5 py-3 text-center">Recall</th>
+                <th class="px-5 py-3 text-center">F1</th>
+                <th class="px-5 py-3 text-center">ARI</th>
+                <th class="px-5 py-3 text-center">Resolved exactly</th>
+                <th class="px-5 py-3 text-center">Over-split</th>
+                <th class="px-5 py-3 text-center">Over-merged</th>
+              </tr>
+            </thead>
+            <tbody id="evaluation-baseline-rows" class="divide-y divide-border/60"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Threshold sweep -->
+      <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 lg:col-span-7 entity-card rounded-lg p-6">
+          <h3 class="text-base font-semibold mb-1">Clustering threshold trade-off</h3>
+          <p class="text-on-surface-variant text-xs mb-4">
+            The shipped threshold is one hand-picked number. Each point re-clusters the stored pairwise edges -
+            no retraining - and scores the result against ground truth.
+          </p>
+          <div class="h-64"><canvas id="chart-threshold-sweep"></canvas></div>
+        </div>
+        <div class="col-span-12 lg:col-span-5 entity-card rounded-lg p-6">
+          <h3 class="text-base font-semibold mb-1">What the sweep says</h3>
+          <p class="text-on-surface-variant text-xs mb-4">Read against the currently configured operating point</p>
+          <div id="evaluation-sweep-notes" class="space-y-3 text-sm"></div>
+        </div>
+      </div>
+
+      <!-- Noise benchmark -->
+      <div class="entity-card rounded-lg overflow-hidden">
+        <div class="p-6 border-b border-border flex justify-between items-start gap-4 flex-wrap">
+          <div>
+            <h3 class="text-base font-semibold">Robustness to data quality</h3>
+            <p class="text-on-surface-variant text-xs max-w-2xl">
+              The whole pipeline re-run against progressively worse data. A probabilistic model should pull further
+              ahead of a fixed rule as the data degrades - if the gap stays flat, the complexity is not earning
+              its keep. Nothing here touches the live dataset.
+            </p>
+          </div>
+          <button id="btn-run-benchmark" class="btn-primary px-4 py-2 text-xs font-semibold flex items-center gap-2 shrink-0">
+            <span class="material-symbols-outlined text-base">play_arrow</span> Run Benchmark
+          </button>
+        </div>
+        <div id="evaluation-benchmark-body">
+          <div class="grid grid-cols-12 gap-6 p-6">
+            <div class="col-span-12 lg:col-span-6">
+              <div class="h-64"><canvas id="chart-benchmark"></canvas></div>
+            </div>
+            <div class="col-span-12 lg:col-span-6 overflow-x-auto">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="bg-surface-container-high text-on-surface-variant text-[10px] uppercase tracking-wider">
+                    <th class="px-4 py-3">Noise level</th>
+                    <th class="px-4 py-3 text-center">Splink F1</th>
+                    <th class="px-4 py-3 text-center">Baseline F1</th>
+                    <th class="px-4 py-3 text-center">Advantage</th>
+                  </tr>
+                </thead>
+                <tbody id="evaluation-benchmark-rows" class="divide-y divide-border/60"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <p id="evaluation-benchmark-empty" class="p-6 text-sm text-on-surface-variant hidden">
+          No benchmark has been run yet. It takes about a minute - each noise level trains a complete model.
+        </p>
+      </div>
+
+
+      <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 lg:col-span-6 entity-card rounded-lg p-6">
+          <h3 class="text-base font-semibold mb-1">Match Confidence Distribution</h3>
+          <p class="text-on-surface-variant text-xs mb-4">
+            Per-record linkage confidence. Note how tightly packed this is - it is why confidence is not used
+            to rank the Review Queue, and why it is not an input to the anomaly model.
+          </p>
+          <div class="h-56"><canvas id="chart-confidence"></canvas></div>
+        </div>
+        <div class="col-span-12 lg:col-span-6 entity-card rounded-lg p-6">
+          <h3 class="text-base font-semibold mb-1">Cluster Size Distribution</h3>
+          <p class="text-on-surface-variant text-xs mb-4">How many agency records were linked into each resolved citizen</p>
+          <div class="h-56"><canvas id="chart-clustersize"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Detector comparison -->
+      <div class="entity-card rounded-lg overflow-hidden">
+        <div class="p-6 border-b border-border">
+          <h3 class="text-base font-semibold">Which anomaly detector actually finds linkage errors?</h3>
+          <p class="text-on-surface-variant text-xs max-w-3xl">
+            Unsupervised detection normally cannot be scored. Here it can: a cluster either does or does not
+            correspond one-to-one with a real citizen, which gives a checkable ranking task. This is the reason
+            more than one algorithm exists in the codebase - each fails differently, and the comparison is
+            the point.
+          </p>
+        </div>
+        <div class="overflow-x-auto">
+          <p id="evaluation-detector-caption" class="px-5 py-3 text-xs text-on-surface-variant border-b border-border"></p>
+          <table class="w-full text-left">
+            <thead>
+              <tr class="bg-surface-container-high text-on-surface-variant text-[10px] uppercase tracking-wider">
+                <th class="px-5 py-3">Detector</th>
+                <th class="px-5 py-3 text-center">Avg precision</th>
+                <th class="px-5 py-3 text-center">Precision@k</th>
+                <th class="px-5 py-3 text-center">Recall@k</th>
+                <th class="px-5 py-3 text-center">Lift vs random</th>
+              </tr>
+            </thead>
+            <tbody id="evaluation-detector-rows" class="divide-y divide-border/60"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFILE (sub-page, opened from any list) -->
+    <section id="view-profile" class="view space-y-6 max-w-[1440px] mx-auto w-full">
+      <button id="btn-back-directory" class="flex items-center gap-1 text-sm text-on-surface-variant hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-base">arrow_back</span> <span id="btn-back-directory-label">Back to Directory</span>
+      </button>
+
+      <div id="profile-content" class="space-y-6"></div>
+    </section>
+
+  </div>
+</main>
+</div>
+
+<!-- ENGAGEMENT TIER DRILL-DOWN MODAL -->
+<div id="tier-drilldown-overlay" class="hidden fixed inset-0 z-[90] flex items-center justify-center bg-background/80 backdrop-blur-sm px-4 py-8">
+  <div class="entity-card rounded-lg w-full max-w-5xl max-h-full flex flex-col overflow-hidden">
+    <div class="p-6 border-b border-border flex justify-between items-start gap-4 shrink-0">
+      <div>
+        <h3 id="tier-drilldown-title" class="text-base font-semibold">Engagement Tier</h3>
+        <p id="tier-drilldown-subtitle" class="text-on-surface-variant text-xs mt-1"></p>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="btn-export-tier-members" class="btn-outline px-4 py-2 text-xs font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-base">download</span> Export CSV
+        </button>
+        <button id="btn-close-tier-drilldown" class="text-on-surface-variant hover:text-primary p-2 rounded-lg hover:bg-surface-container-high transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+    </div>
+    <div class="overflow-y-auto">
+      <div id="tier-drilldown-empty" class="p-12 text-center text-on-surface-variant text-sm">Loading members...</div>
+      <table id="tier-drilldown-table" class="w-full text-left hidden">
+        <thead class="sticky top-0 bg-surface-container-high">
+          <tr class="text-on-surface-variant text-[10px] uppercase tracking-wider">
+            <th class="px-5 py-3">Citizen ID</th>
+            <th class="px-5 py-3">Name</th>
+            <th class="px-5 py-3">Agencies</th>
+            <th class="px-5 py-3 text-center">Confidence</th>
+            <th class="px-5 py-3 text-center">Detail</th>
+          </tr>
+        </thead>
+        <tbody id="tier-drilldown-rows" class="divide-y divide-border/60"></tbody>
+      </table>
+    </div>
+    <div class="p-4 border-t border-border flex justify-between items-center shrink-0">
+      <p id="tier-drilldown-caption" class="text-xs text-on-surface-variant"></p>
+      <button id="btn-tier-drilldown-show-more" class="btn-outline px-4 py-2 text-xs font-semibold hidden">Show More</button>
+    </div>
+  </div>
+</div>
+
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/10 blur-[120px] rounded-full opacity-30 animate-pulse-slow"></div>
+  <div class="absolute bottom-0 left-72 w-[600px] h-[600px] bg-accent/10 blur-[100px] rounded-full opacity-20 animate-pulse-slow"></div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

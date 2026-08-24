@@ -1,0 +1,25 @@
+# The local conda environment - hundreds of megabytes, and the image builds
+# its own dependencies from app/requirements.txt. Excluding this is the
+# single most important line in this file.
+env/
+
+# The local DuckDB file. The image builds its own during `docker build`
+# (see Dockerfile), and shipping a stale local copy would silently override
+# it.
+data/
+
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+*.duckdb
+
+.git/
+.gitignore
+.claude/
+
+tests/
+pytest.ini
+
+*.md
+run.ps1

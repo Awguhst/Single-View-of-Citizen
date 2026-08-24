@@ -1,0 +1,14 @@
+# This repo is developed on Windows but built and run inside a Linux
+# container, so line endings are normalised to LF in the repository. Without
+# this, files checked in with CRLF can reach the image and break anything
+# that treats them as shell input.
+* text=auto eol=lf
+
+# Windows-only, and genuinely wants CRLF.
+*.ps1 text eol=crlf
+
+# Never touched: keeping these binary avoids any newline rewriting.
+*.duckdb binary
+*.png binary
+*.jpg binary
+*.pdf binary
