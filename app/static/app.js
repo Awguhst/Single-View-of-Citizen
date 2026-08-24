@@ -141,16 +141,45 @@ async function downloadFile(path, fallbackName) {
   URL.revokeObjectURL(url);
 }
 
-// The backend returns a 400 ending in this exact phrase whenever citizen
-// data hasn't been linked yet - "No citizen profiles found. Call POST
-// /run-linkage first." from most endpoints, "No linkage results found. Call
-// POST /run-linkage first." from a couple of others. Either way, this means
-// data was (re)generated but /run-linkage hasn't (re)run yet - an expected
-// step of the pipeline, not a failure, so callers should show a quiet inline
-// empty state instead of a red error toast.
-const NO_PROFILES_SUFFIX = "Call POST /run-linkage first.";
-function isNoProfilesError(e) {
-  return typeof e.message === "string" && e.message.endsWith(NO_PROFILES_SUFFIX);
+// The pipeline is a sequence - generate data, run linkage, then everything
+// else - and a page opened out of order should explain which step is missing,
+// never leak a raw API string or render half-blank. `pipelineNotice()` is the
+// one definition of that state so all four pages say it the same way.
+//
+// Backend messages are matched rather than parsed: each names the step the
+// caller still owes, and that phrasing is the contract worth keying off.
+const PIPELINE_STEPS = [
+  { match: "POST /generate-data", label: "No data yet", action: 'Click "Generate Data" to create the synthetic dataset.' },
+  { match: "POST /run-linkage", label: "Linkage has not run yet", action: 'Click "Run Linkage" to resolve identities, then this page will fill in.' },
+  { match: "POST /anomaly-detection/run", label: "Nothing scored yet", action: 'Click "Run Analysis" to rank the resolved profiles.' },
+  { match: "POST /benchmark/run", label: "No benchmark yet", action: 'Click "Run Benchmark" to score the pipeline across noise levels.' },
+];
+
+function pipelineStepFor(error) {
+  const message = (error && error.message) || "";
+  return PIPELINE_STEPS.find((step) => message.includes(step.match)) || null;
+}
+
+// True when an error just means an earlier pipeline step is outstanding -
+// an expected state, not a failure, so callers show a quiet inline notice
+// instead of a red toast.
+function isPipelinePending(error) {
+  return pipelineStepFor(error) !== null;
+}
+
+function pipelineNotice(error, { compact = false } = {}) {
+  const step = pipelineStepFor(error);
+  const label = step ? step.label : "Unavailable";
+  const action = step ? step.action : (error && error.message) || "Something went wrong.";
+  if (compact) {
+    return `<p class="text-on-surface-variant text-xs"><span class="font-medium text-on-surface">${label}.</span> ${action}</p>`;
+  }
+  return `
+    <div class="entity-card rounded-lg p-8 text-center col-span-full">
+      <span class="material-symbols-outlined text-on-surface-variant text-2xl">hourglass_empty</span>
+      <p class="font-medium text-sm mt-2">${label}</p>
+      <p class="text-on-surface-variant text-xs mt-1">${action}</p>
+    </div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -261,10 +290,8 @@ async function loadDashboard() {
   try {
     e = await api("/engagement");
   } catch (err) {
-    if (!isNoProfilesError(err)) showToast(err.message, true);
-    engagementEmpty.textContent = isNoProfilesError(err)
-      ? "Run linkage to see citizens grouped by engagement tier."
-      : "Failed to load - see toast for details.";
+    if (!isPipelinePending(err)) showToast(err.message, true);
+    engagementEmpty.innerHTML = pipelineNotice(err, { compact: true });
     engagementEmpty.classList.remove("hidden");
   }
 
@@ -339,7 +366,7 @@ async function loadShowcase() {
   try {
     s = await api("/dashboard/showcase");
   } catch (e) {
-    container.innerHTML = `<div class="entity-card rounded-lg p-8 text-center text-on-surface-variant text-sm">Run linkage first to see a before/after example here.</div>`;
+    container.innerHTML = pipelineNotice(e);
     return;
   }
 
@@ -438,8 +465,8 @@ async function runSearch(query, { navigate = true, resetLimit = true } = {}) {
   try {
     data = await api(`/search?q=${encodeURIComponent(trimmed)}&limit=${directoryLimit}`);
   } catch (e) {
-    if (isNoProfilesError(e)) {
-      empty.textContent = "No resolved citizens yet - generate data and run linkage first.";
+    if (isPipelinePending(e)) {
+      empty.innerHTML = pipelineNotice(e, { compact: true });
     } else {
       showToast(e.message, true);
       empty.textContent = "Search failed - see toast for details.";
@@ -1127,14 +1154,23 @@ async function loadReviewQueue() {
   try {
     a = await api(`/anomaly-detection?limit=${anomalyLimit}`);
   } catch (e) {
+    // "Run Analysis" only works once linkage has produced profiles, so before
+    // that this has to name the step actually outstanding rather than pointing
+    // at a button that would fail.
     grid.innerHTML = "";
+    empty.innerHTML = pipelineNotice(e, { compact: true });
     empty.classList.remove("hidden");
     content.classList.add("hidden");
+    if (!isPipelinePending(e)) showToast(e.message, true);
     return;
   }
 
   if (a.total_profiles_analyzed === 0) {
     grid.innerHTML = "";
+    empty.innerHTML = pipelineNotice(
+      { message: "No anomaly results found. Call POST /anomaly-detection/run first." },
+      { compact: true }
+    );
     empty.classList.remove("hidden");
     content.classList.add("hidden");
     return;
@@ -1308,10 +1344,8 @@ async function loadEngagementSummary() {
   try {
     d = await api("/engagement");
   } catch (e) {
-    if (!isNoProfilesError(e)) showToast(e.message, true);
-    grid.innerHTML = `<div class="entity-card rounded-xl p-8 text-center text-on-surface-variant text-sm col-span-full">${
-      isNoProfilesError(e) ? "Run linkage to see engagement segments." : "Failed to load - see toast for details."
-    }</div>`;
+    if (!isPipelinePending(e)) showToast(e.message, true);
+    grid.innerHTML = pipelineNotice(e);
     return;
   }
 
@@ -1503,11 +1537,8 @@ async function loadServiceCoverageSummary() {
   try {
     s = await api("/service-coverage");
   } catch (e) {
-    if (!isNoProfilesError(e)) showToast(e.message, true);
-    document.getElementById("service-coverage-kpi-grid").innerHTML =
-      `<div class="entity-card rounded-lg p-8 text-center text-on-surface-variant text-sm col-span-full">${
-        isNoProfilesError(e) ? "Run linkage to see service coverage gaps." : "Failed to load - see toast for details."
-      }</div>`;
+    if (!isPipelinePending(e)) showToast(e.message, true);
+    document.getElementById("service-coverage-kpi-grid").innerHTML = pipelineNotice(e);
     return;
   }
   renderServiceCoverageSummary(s);
@@ -1810,6 +1841,12 @@ async function loadEvaluation() {
   document.getElementById("evaluation-detector-caption").textContent =
     "Ranking each detector against the known linkage errors…";
 
+  const showUnavailable = (error) => {
+    document.getElementById("evaluation-kpi-grid").innerHTML = pipelineNotice(error);
+    document.getElementById("evaluation-baseline-rows").innerHTML =
+      `<tr><td colspan="8" class="px-5 py-8 text-center">${pipelineNotice(error, { compact: true })}</td></tr>`;
+  };
+
   const headline = api("/evaluation/linkage").then((evaluation) => {
     const splink = evaluation.splink;
     document.getElementById("evaluation-kpi-grid").innerHTML = [
@@ -1820,6 +1857,11 @@ async function loadEvaluation() {
     ].join("");
     document.getElementById("evaluation-baseline-rows").innerHTML =
       metricRow(splink, { highlight: true }) + evaluation.baselines.map((b) => metricRow(b)).join("");
+  }).catch((e) => {
+    // Previously this returned silently on a pending pipeline, leaving the
+    // KPI row and the baseline table blank with no explanation.
+    showUnavailable(e);
+    if (!isPipelinePending(e)) showToast(e.message, true);
   });
 
   // One panel being unavailable - for example a database linked before
@@ -1831,18 +1873,14 @@ async function loadEvaluation() {
       renderSweepNotes(data);
     })
     .catch((e) => {
-      document.getElementById("evaluation-sweep-notes").innerHTML = sweepNote(
-        "info",
-        "Threshold sweep unavailable",
-        e.message,
-        "text-on-surface-variant"
-      );
+      document.getElementById("evaluation-sweep-notes").innerHTML = pipelineNotice(e, { compact: true });
     });
 
   const detectors = api("/anomaly-detection/evaluation")
     .then(renderDetectors)
     .catch((e) => {
-      document.getElementById("evaluation-detector-caption").textContent = e.message;
+      document.getElementById("evaluation-detector-caption").innerHTML = pipelineNotice(e, { compact: true });
+      document.getElementById("evaluation-detector-rows").innerHTML = "";
     });
 
   const benchmark = api("/benchmark")

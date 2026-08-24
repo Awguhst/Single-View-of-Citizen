@@ -116,3 +116,32 @@ def test_openapi_schema_builds(client):
     paths = response.json()["paths"]
     for endpoint in ("/evaluation/linkage", "/benchmark", "/citizen/{master_citizen_id}/graph"):
         assert endpoint in paths
+
+
+def test_pending_pipeline_errors_name_the_outstanding_step(client, tiny_linked_db):
+    """Each 400 must point at the step the caller actually owes next.
+
+    `/anomaly-detection` used to check for anomaly results without first
+    checking whether any profiles existed, so before linkage it told the user
+    to "Call POST /anomaly-detection/run" - a step that cannot succeed with
+    nothing to score. The frontend renders these messages, so the wrong one
+    sends the user to a button that fails.
+    """
+    response = client.get("/anomaly-detection")
+    assert response.status_code == 400
+    detail = response.json()["detail"]
+    assert "run-linkage" in detail, detail
+    assert "anomaly-detection/run" not in detail, detail
+
+
+def test_every_pending_error_matches_a_known_pipeline_step(client, db_path):
+    """The frontend maps these messages onto a named step (see
+    `PIPELINE_STEPS` in app.js). An endpoint inventing different wording would
+    fall through to a raw API string in the UI."""
+    known = ("POST /generate-data", "POST /run-linkage", "POST /anomaly-detection/run", "POST /benchmark/run")
+    for path in NEW_ENDPOINTS + ["/anomaly-detection", "/quality", "/engagement", "/search"]:
+        response = client.get(path)
+        if response.status_code != 400:
+            continue
+        detail = response.json()["detail"]
+        assert any(step in detail for step in known), f"{path}: {detail}"

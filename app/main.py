@@ -301,6 +301,11 @@ def anomaly_detection(
 ) -> AnomalyDetectionResponse:
     """The most recently computed Isolation Forest anomaly-detection
     results. Call POST /anomaly-detection/run first to (re)compute."""
+    # Order matters: without profiles there is nothing to score, so telling
+    # the caller to run the analysis would point them at a step that cannot
+    # succeed yet. Name the step actually outstanding.
+    if not citizen_service.has_citizen_profiles():
+        raise HTTPException(status_code=400, detail="No citizen profiles found. Call POST /run-linkage first.")
     if not anomaly_service.has_anomaly_results():
         raise HTTPException(status_code=400, detail="No anomaly results found. Call POST /anomaly-detection/run first.")
     return AnomalyDetectionResponse(**anomaly_service.get_anomaly_summary(limit))
