@@ -525,8 +525,8 @@ async function runSearch(query, { navigate = true, resetLimit = true } = {}) {
       (r) => `
         <tr class="hover:bg-surface-container-high transition-colors">
           <td class="px-5 py-3 font-mono text-xs text-primary">${r.master_citizen_id}</td>
-          <td class="px-5 py-3 font-medium">${r.preferred_name}</td>
-          <td class="px-5 py-3 text-xs text-on-surface-variant">${r.linked_agencies.join(", ")}</td>
+          <td class="px-5 py-3 font-medium whitespace-nowrap">${r.preferred_name}</td>
+          <td class="px-5 py-3 text-xs text-on-surface-variant max-w-[16rem] truncate" title="${r.linked_agencies.join(", ")}">${r.linked_agencies.join(", ")}</td>
           <td class="px-5 py-3"><span class="badge border ${ENGAGEMENT_TIER_CLASSES[r.engagement_tier]}">${r.engagement_tier}</span></td>
           <td class="px-5 py-3">${coverageGapCell(r.linked_agencies)}</td>
           <td class="px-5 py-3 text-center">
@@ -1272,15 +1272,15 @@ async function loadReviewQueue() {
   rows.innerHTML = a.results
     .map(
       (r) => `
-    <tr class="hover:bg-surface-container-high transition-colors">
-      <td class="px-5 py-3 font-mono text-xs text-primary">${r.master_citizen_id}</td>
-      <td class="px-5 py-3 font-medium">${r.preferred_name}</td>
-      <td class="px-5 py-3 text-center">${r.agency_count}</td>
-      <td class="px-5 py-3 text-center">${r.record_count}</td>
-      <td class="px-5 py-3">${anomalyFactors(r.top_factors)}</td>
-      <td class="px-5 py-3">${conflictCells(r.conflicts)}</td>
-      <td class="px-5 py-3 text-center font-semibold">${r.anomaly_score.toFixed(1)}</td>
-      <td class="px-5 py-3 text-center">
+    <tr class="hover:bg-surface-container-high transition-colors align-top">
+      <td class="px-4 py-3 font-mono text-xs text-primary whitespace-nowrap">${r.master_citizen_id}</td>
+      <td class="px-4 py-3 font-medium whitespace-nowrap">${r.preferred_name}</td>
+      <td class="px-3 py-3 text-center font-mono tabular-nums">${r.agency_count}</td>
+      <td class="px-3 py-3 text-center font-mono tabular-nums">${r.record_count}</td>
+      <td class="px-4 py-3 min-w-[13rem]">${anomalyFactors(r.top_factors)}</td>
+      <td class="px-4 py-3 min-w-[9rem]">${conflictCells(r.conflicts)}</td>
+      <td class="px-3 py-3 text-center font-mono tabular-nums font-semibold">${r.anomaly_score.toFixed(1)}</td>
+      <td class="px-3 py-3 text-center">
         <button class="view-anomaly-profile text-on-surface-variant hover:text-primary" data-id="${r.master_citizen_id}">
           <span class="material-symbols-outlined text-base">visibility</span>
         </button>
@@ -1460,8 +1460,8 @@ async function loadTierDrilldown(tier, { resetLimit = true } = {}) {
       (r) => `
         <tr class="hover:bg-surface-container-high transition-colors">
           <td class="px-5 py-3 font-mono text-xs text-primary">${r.master_citizen_id}</td>
-          <td class="px-5 py-3 font-medium">${r.preferred_name}</td>
-          <td class="px-5 py-3 text-xs text-on-surface-variant">${r.linked_agencies.join(", ")}</td>
+          <td class="px-5 py-3 font-medium whitespace-nowrap">${r.preferred_name}</td>
+          <td class="px-5 py-3 text-xs text-on-surface-variant max-w-[16rem] truncate" title="${r.linked_agencies.join(", ")}">${r.linked_agencies.join(", ")}</td>
           <td class="px-5 py-3 text-center">${confidenceBadge(r.confidence_score)}</td>
           <td class="px-5 py-3 text-center">
             <button class="view-tier-drilldown-profile text-on-surface-variant hover:text-primary" data-id="${r.master_citizen_id}">

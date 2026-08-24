@@ -407,12 +407,12 @@
           <table id="directory-table" class="w-full text-left hidden">
             <thead>
               <tr class="bg-surface-container-high text-on-surface-variant text-[10px] uppercase tracking-wider">
-                <th class="px-5 py-3">Citizen ID</th>
-                <th class="px-5 py-3">Name</th>
-                <th class="px-5 py-3">Agencies</th>
-                <th class="px-5 py-3">Engagement Tier</th>
-                <th class="px-5 py-3">Coverage Gaps</th>
-                <th class="px-5 py-3 text-center">Detail</th>
+                <th class="px-5 py-3 whitespace-nowrap">Citizen ID</th>
+                <th class="px-5 py-3 whitespace-nowrap">Name</th>
+                <th class="px-5 py-3 whitespace-nowrap">Agencies</th>
+                <th class="px-5 py-3 whitespace-nowrap">Engagement Tier</th>
+                <th class="px-5 py-3 whitespace-nowrap">Coverage Gaps</th>
+                <th class="px-3 py-3 text-center whitespace-nowrap">Detail</th>
               </tr>
             </thead>
             <tbody id="directory-rows" class="divide-y divide-border/60"></tbody>
@@ -458,9 +458,8 @@
             citizen - two people merged into one profile, or one person split across several. Measured against
             the known ground truth, this ranking surfaces
             <span class="font-medium text-on-surface">61% of all real linkage errors inside the top 5%</span> of the
-            population (25x better than picking at random). The old "lowest match confidence" queue was dropped
-            because confidence is effectively constant here - it ranked on noise. See
-            <span class="font-medium text-on-surface">Evaluation</span> for that comparison.
+            population, 25x better than picking at random. See
+            <span class="font-medium text-on-surface">Evaluation</span> for the full comparison.
           </div>
         </div>
       </div>
@@ -497,14 +496,14 @@
             <table class="w-full text-left">
               <thead>
                 <tr class="bg-surface-container-high text-on-surface-variant text-[10px] uppercase tracking-wider">
-                  <th class="px-5 py-3">Citizen ID</th>
-                  <th class="px-5 py-3">Name</th>
-                  <th class="px-5 py-3 text-center">Agencies</th>
-                  <th class="px-5 py-3 text-center">Records</th>
-                  <th class="px-5 py-3">What The Model Reacted To</th>
-                  <th class="px-5 py-3">Conflicting Values On File</th>
-                  <th class="px-5 py-3 text-center">Score</th>
-                  <th class="px-5 py-3 text-center">Detail</th>
+                  <th class="px-4 py-3 whitespace-nowrap">Citizen ID</th>
+                  <th class="px-4 py-3 whitespace-nowrap">Name</th>
+                  <th class="px-3 py-3 text-center whitespace-nowrap">Agencies</th>
+                  <th class="px-3 py-3 text-center whitespace-nowrap">Records</th>
+                  <th class="px-4 py-3 whitespace-nowrap">Why Flagged</th>
+                  <th class="px-4 py-3 whitespace-nowrap">Conflicts</th>
+                  <th class="px-3 py-3 text-center whitespace-nowrap">Score</th>
+                  <th class="px-3 py-3 text-center whitespace-nowrap">Detail</th>
                 </tr>
               </thead>
               <tbody id="anomaly-rows" class="divide-y divide-border/60"></tbody>
@@ -555,14 +554,14 @@
           <table class="w-full text-left">
             <thead>
               <tr class="bg-surface-container-high text-on-surface-variant text-[10px] uppercase tracking-wider">
-                <th class="px-5 py-3">Method</th>
-                <th class="px-5 py-3 text-center">Precision</th>
-                <th class="px-5 py-3 text-center">Recall</th>
-                <th class="px-5 py-3 text-center">F1</th>
-                <th class="px-5 py-3 text-center">ARI</th>
-                <th class="px-5 py-3 text-center">Resolved exactly</th>
-                <th class="px-5 py-3 text-center">Over-split</th>
-                <th class="px-5 py-3 text-center">Over-merged</th>
+                <th class="px-5 py-3 whitespace-nowrap">Method</th>
+                <th class="px-5 py-3 text-center whitespace-nowrap">Precision</th>
+                <th class="px-5 py-3 text-center whitespace-nowrap">Recall</th>
+                <th class="px-5 py-3 text-center whitespace-nowrap">F1</th>
+                <th class="px-5 py-3 text-center whitespace-nowrap">ARI</th>
+                <th class="px-5 py-3 text-center whitespace-nowrap">Resolved exactly</th>
+                <th class="px-5 py-3 text-center whitespace-nowrap">Over-split</th>
+                <th class="px-5 py-3 text-center whitespace-nowrap">Over-merged</th>
               </tr>
             </thead>
             <tbody id="evaluation-baseline-rows" class="divide-y divide-border/60"></tbody>
@@ -611,10 +610,10 @@
               <table class="w-full text-left">
                 <thead>
                   <tr class="bg-surface-container-high text-on-surface-variant text-[10px] uppercase tracking-wider">
-                    <th class="px-4 py-3">Noise level</th>
-                    <th class="px-4 py-3 text-center">Splink F1</th>
-                    <th class="px-4 py-3 text-center">Baseline F1</th>
-                    <th class="px-4 py-3 text-center">Advantage</th>
+                    <th class="px-4 py-3 whitespace-nowrap">Noise level</th>
+                    <th class="px-4 py-3 text-center whitespace-nowrap">Splink F1</th>
+                    <th class="px-4 py-3 text-center whitespace-nowrap">Baseline F1</th>
+                    <th class="px-4 py-3 text-center whitespace-nowrap">Advantage</th>
                   </tr>
                 </thead>
                 <tbody id="evaluation-benchmark-rows" class="divide-y divide-border/60"></tbody>
@@ -632,8 +631,8 @@
         <div class="col-span-12 lg:col-span-6 entity-card rounded-lg p-6">
           <h3 class="text-base font-semibold mb-1">Match Confidence Distribution</h3>
           <p class="text-on-surface-variant text-xs mb-4">
-            Per-record linkage confidence. Note how tightly packed this is - it is why confidence is not used
-            to rank the Review Queue, and why it is not an input to the anomaly model.
+            Per-record linkage confidence. It sits in a very narrow band across the whole population, so it
+            separates almost nothing - which is why the models here rank on linkage structure instead.
           </p>
           <div class="h-56"><canvas id="chart-confidence"></canvas></div>
         </div>
@@ -660,11 +659,11 @@
           <table class="w-full text-left">
             <thead>
               <tr class="bg-surface-container-high text-on-surface-variant text-[10px] uppercase tracking-wider">
-                <th class="px-5 py-3">Detector</th>
-                <th class="px-5 py-3 text-center">Avg precision</th>
-                <th class="px-5 py-3 text-center">Precision@k</th>
-                <th class="px-5 py-3 text-center">Recall@k</th>
-                <th class="px-5 py-3 text-center">Lift vs random</th>
+                <th class="px-5 py-3 whitespace-nowrap">Detector</th>
+                <th class="px-5 py-3 text-center whitespace-nowrap">Avg precision</th>
+                <th class="px-5 py-3 text-center whitespace-nowrap">Precision@k</th>
+                <th class="px-5 py-3 text-center whitespace-nowrap">Recall@k</th>
+                <th class="px-5 py-3 text-center whitespace-nowrap">Lift vs random</th>
               </tr>
             </thead>
             <tbody id="evaluation-detector-rows" class="divide-y divide-border/60"></tbody>
@@ -703,16 +702,16 @@
         </button>
       </div>
     </div>
-    <div class="overflow-y-auto">
+    <div class="overflow-y-auto overflow-x-auto">
       <div id="tier-drilldown-empty" class="p-12 text-center text-on-surface-variant text-sm">Loading members...</div>
       <table id="tier-drilldown-table" class="w-full text-left hidden">
         <thead class="sticky top-0 bg-surface-container-high">
           <tr class="text-on-surface-variant text-[10px] uppercase tracking-wider">
-            <th class="px-5 py-3">Citizen ID</th>
-            <th class="px-5 py-3">Name</th>
-            <th class="px-5 py-3">Agencies</th>
-            <th class="px-5 py-3 text-center">Confidence</th>
-            <th class="px-5 py-3 text-center">Detail</th>
+            <th class="px-5 py-3 whitespace-nowrap">Citizen ID</th>
+            <th class="px-5 py-3 whitespace-nowrap">Name</th>
+            <th class="px-5 py-3 whitespace-nowrap">Agencies</th>
+            <th class="px-5 py-3 text-center whitespace-nowrap">Confidence</th>
+            <th class="px-3 py-3 text-center whitespace-nowrap">Detail</th>
           </tr>
         </thead>
         <tbody id="tier-drilldown-rows" class="divide-y divide-border/60"></tbody>
