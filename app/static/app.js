@@ -6,19 +6,25 @@ const GBP = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP",
 const INT = new Intl.NumberFormat("en-GB");
 
 const CHART_COLORS = {
-  primary: "#47a8f6",
-  primaryDark: "#0055ff",
-  accent: "#38bdf8",
-  border: "#334155",
-  muted: "#94a3b8",
-  danger: "#f87171",
-  // Material 3 semantic tokens, added for the tier <-> badge color alignment below.
-  // primaryContainer/tertiary are numerically identical to primaryDark/accent
-  // (same M3 seed color/theme) - this is a semantic rename, not a color change.
-  error: "#f87171",
-  secondary: "#94a3b8",
-  primaryContainer: "#0055ff",
-  tertiary: "#38bdf8",
+  // Material 3 roles, matching the tokens in index.html's tailwind config.
+  // Categorical series should walk primary -> secondary -> tertiary, which are
+  // separated by hue (blue / lilac / pink) rather than by lightness, so they
+  // stay distinguishable for viewers with colour-vision deficiency and in
+  // greyscale print.
+  primary: "#bdd2ff",
+  primaryDark: "#8fb7ff",
+  accent: "#f4c3e6",
+  secondary: "#cfbdff",
+  tertiary: "#f4c3e6",
+  border: "#434750",
+  muted: "#8d909b",
+  danger: "#ffb4ab",
+  error: "#ffb4ab",
+  warning: "#f0c485",
+  success: "#a8d8b6",
+  primaryContainer: "#8fb7ff",
+  surface: "#1e1f24",
+  onSurface: "#e3e1e9",
 };
 
 const ENGAGEMENT_TIER_COLORS = {
@@ -78,6 +84,28 @@ const SERVICE_RECOMMENDATIONS = {
   "Housing": { icon: "home", title: "Apply for housing assistance", blurb: "May qualify for housing benefit or social housing support.", office: "Kingsmere Housing Authority" },
 };
 
+// Chart.js defaults to #666 text and #ddd gridlines, which are tuned for a
+// light page. On this background the axis labels measured 2.86:1 - below the
+// 3:1 floor for large text - so every chart in the app was hard to read.
+// Setting the roles once here means individual chart configs stay about data,
+// not about colour.
+if (window.Chart && Chart.defaults && Chart.defaults.plugins) {
+  Chart.defaults.color = CHART_COLORS.muted;
+  Chart.defaults.borderColor = CHART_COLORS.border;
+  Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.plugins.legend.labels.color = CHART_COLORS.onSurface;
+  Chart.defaults.plugins.legend.labels.boxWidth = 12;
+  Chart.defaults.plugins.legend.labels.usePointStyle = true;
+  Chart.defaults.plugins.tooltip.backgroundColor = "#0d0e13";
+  Chart.defaults.plugins.tooltip.borderColor = CHART_COLORS.border;
+  Chart.defaults.plugins.tooltip.borderWidth = 1;
+  Chart.defaults.plugins.tooltip.titleColor = CHART_COLORS.onSurface;
+  Chart.defaults.plugins.tooltip.bodyColor = CHART_COLORS.muted;
+  Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.plugins.tooltip.cornerRadius = 8;
+}
+
 let charts = {};
 
 function destroyChart(key) {
@@ -92,7 +120,7 @@ function showToast(message, isError = false) {
   toast.textContent = message;
   toast.className =
     "toast fixed top-20 right-8 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg " +
-    (isError ? "bg-red-500/90 text-white" : "bg-card border border-primary-dark text-on-surface");
+    (isError ? "bg-error/90 text-white" : "bg-card border border-primary-dark text-on-surface");
   toast.style.opacity = "1";
   toast.style.pointerEvents = "auto";
   clearTimeout(window.__toastTimer);
@@ -252,7 +280,7 @@ function kpiCard(label, value, icon, sub) {
         <span class="material-symbols-outlined text-primary">${icon}</span>
       </div>
       <div>
-        <p class="text-2xl font-bold text-on-surface">${value}</p>
+        <p class="text-2xl font-mono font-semibold text-on-surface tabular-nums">${value}</p>
         ${sub ? `<p class="text-[11px] text-on-surface-variant mt-1">${sub}</p>` : ""}
       </div>
     </div>`;
@@ -313,14 +341,14 @@ async function loadDashboard() {
           {
             data: e.tiers.map((t) => t.citizen_count),
             backgroundColor: e.tiers.map((t) => ENGAGEMENT_TIER_COLORS[t.engagement_tier]),
-            borderColor: "#0f172a",
+            borderColor: "#1e1f24",
             borderWidth: 2,
           },
         ],
       },
       options: {
         maintainAspectRatio: false,
-        plugins: { legend: { position: "bottom", labels: { color: "#94a3b8", font: { size: 11 } } } },
+        plugins: { legend: { position: "bottom", labels: { color: "#8d909b", font: { size: 11 } } } },
       },
     });
   }
@@ -338,8 +366,8 @@ async function loadDashboard() {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: "#94a3b8" }, grid: { color: "#1e293b" } },
-        y: { ticks: { color: "#94a3b8" }, grid: { color: "#1e293b" } },
+        x: { ticks: { color: "#8d909b" }, grid: { color: "#434750" } },
+        y: { ticks: { color: "#8d909b" }, grid: { color: "#434750" } },
       },
     },
   });
@@ -352,7 +380,7 @@ function showcasePersonCard(r) {
   return `
     <div class="bg-surface-container-high/60 border border-border rounded-lg p-4">
       <div class="flex items-center gap-3 mb-2">
-        <div class="w-8 h-8 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-xs font-bold text-red-400 shrink-0">
+        <div class="w-8 h-8 rounded-full bg-error/10 border border-error/30 flex items-center justify-center text-xs font-bold text-error shrink-0">
           ${initials(`${r.first_name} ${r.last_name}`)}
         </div>
         <div class="min-w-0">
@@ -382,8 +410,8 @@ async function loadShowcase() {
 
   container.innerHTML = `
     <div class="grid grid-cols-12 gap-4 items-stretch">
-      <div class="col-span-12 lg:col-span-5 border-2 border-dashed border-red-500/30 rounded-lg p-5 bg-red-500/[0.03]">
-        <span class="badge bg-red-500/15 text-red-400 mb-3 inline-block">Before Linking</span>
+      <div class="col-span-12 lg:col-span-5 border-2 border-dashed border-error/30 rounded-lg p-5 bg-error/[0.03]">
+        <span class="badge bg-error/15 text-error mb-3 inline-block">Before Linking</span>
         <p class="text-sm text-on-surface-variant mb-4">${showcaseRecords.length} separate agency records look like ${showcaseRecords.length} different people</p>
         <div class="space-y-3">
           ${showcaseRecords.map(showcasePersonCard).join("")}
@@ -397,7 +425,7 @@ async function loadShowcase() {
       </div>
 
       <div class="col-span-12 lg:col-span-5 border-2 border-primary-dark/40 rounded-lg p-5 bg-primary/[0.04] flex flex-col">
-        <span class="badge bg-emerald-500/15 text-emerald-400 mb-3 self-start">After Linking</span>
+        <span class="badge bg-success/15 text-success mb-3 self-start">After Linking</span>
         <div class="flex items-center gap-3 mb-4">
           <div class="w-12 h-12 rounded-full bg-primary-dark/20 border-2 border-primary-dark flex items-center justify-center text-sm font-bold text-primary shrink-0">
             ${initials(s.preferred_name)}
@@ -444,9 +472,9 @@ function coverageGapCell(linkedAgencies) {
 
 function confidenceBadge(p) {
   const pct = (p * 100).toFixed(1) + "%";
-  if (p >= 0.99) return `<span class="badge bg-emerald-500/15 text-emerald-400">${pct}</span>`;
-  if (p >= 0.9) return `<span class="badge bg-amber-500/15 text-amber-400">${pct}</span>`;
-  return `<span class="badge bg-red-500/15 text-red-400">${pct}</span>`;
+  if (p >= 0.99) return `<span class="badge bg-success/15 text-success">${pct}</span>`;
+  if (p >= 0.9) return `<span class="badge bg-warning/15 text-warning">${pct}</span>`;
+  return `<span class="badge bg-error/15 text-error">${pct}</span>`;
 }
 
 const DIRECTORY_PAGE_SIZE = 50;
@@ -715,7 +743,7 @@ function evidenceChip(item) {
     item.agreement === "agreed"
       ? "text-primary border-primary/30"
       : item.agreement === "disagreed"
-        ? "text-red-400 border-red-400/30"
+        ? "text-error border-error/30"
         : "text-on-surface-variant border-outline-variant/40";
   return `<span class="text-[10px] px-2 py-0.5 rounded border ${tone}">${item.field.replace(/_/g, " ")}: ${item.agreement}</span>`;
 }
@@ -733,8 +761,8 @@ function linkageEvidencePanel(graph) {
 
   const verdict = bridge
     ? `
-      <div class="flex items-start gap-3 p-3 rounded bg-amber-400/5 border border-amber-400/20">
-        <span class="material-symbols-outlined text-amber-400 text-base mt-0.5">link_off</span>
+      <div class="flex items-start gap-3 p-3 rounded bg-warning/5 border border-warning/20">
+        <span class="material-symbols-outlined text-warning text-base mt-0.5">link_off</span>
         <div>
           <p class="font-medium text-sm">${graph.bridge_count} single point${graph.bridge_count === 1 ? "" : "s"} of failure</p>
           <p class="text-on-surface-variant text-xs mt-0.5">
@@ -830,15 +858,15 @@ function fieldAgreementRow(f) {
   if (f.is_consistent) {
     return `
       <div class="flex items-center gap-3 text-sm py-2">
-        <span class="material-symbols-outlined text-emerald-400 text-base">check_circle</span>
+        <span class="material-symbols-outlined text-success text-base">check_circle</span>
         <span class="capitalize text-on-surface-variant">${label}</span>
         <span class="ml-auto text-xs text-on-surface-variant">matched exactly</span>
       </div>`;
   }
   return `
-    <div class="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 my-1.5">
+    <div class="p-3 rounded-lg bg-warning/5 border border-warning/20 my-1.5">
       <div class="flex items-center gap-3 text-sm">
-        <span class="material-symbols-outlined text-amber-400 text-base">warning</span>
+        <span class="material-symbols-outlined text-warning text-base">warning</span>
         <span class="capitalize font-medium">${label} varies across linked records</span>
       </div>
       <p class="text-xs text-on-surface-variant mt-1 ml-8">${f.distinct_values.join("  vs.  ")}</p>
@@ -1139,7 +1167,7 @@ function conflictCells(conflicts) {
       (c) => `
       <div class="text-xs mb-1 last:mb-0">
         <span class="text-on-surface-variant">${c.label}:</span>
-        ${c.values.map((v) => `<span class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-red-400/10 text-red-400 ml-1">${v}</span>`).join("")}
+        ${c.values.map((v) => `<span class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-error/10 text-error ml-1">${v}</span>`).join("")}
       </div>`
     )
     .join("");
@@ -1147,8 +1175,8 @@ function conflictCells(conflicts) {
 
 function anomalyStatusBadge(status) {
   return status === "Anomalous"
-    ? `<span class="badge bg-red-500/15 text-red-400">${status}</span>`
-    : `<span class="badge bg-emerald-500/15 text-emerald-400">${status}</span>`;
+    ? `<span class="badge bg-error/15 text-error">${status}</span>`
+    : `<span class="badge bg-success/15 text-success">${status}</span>`;
 }
 
 const ANOMALY_PAGE_SIZE = 50;
@@ -1212,8 +1240,8 @@ async function loadReviewQueue() {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: "#94a3b8" }, grid: { display: false } },
-        y: { ticks: { color: "#94a3b8" }, grid: { color: "#1e293b" } },
+        x: { ticks: { color: "#8d909b" }, grid: { display: false } },
+        y: { ticks: { color: "#8d909b" }, grid: { color: "#434750" } },
       },
     },
   });
@@ -1227,14 +1255,14 @@ async function loadReviewQueue() {
         {
           data: [a.normal_count, a.anomalies_detected],
           backgroundColor: [CHART_COLORS.primary, CHART_COLORS.danger],
-          borderColor: "#0f172a",
+          borderColor: "#1e1f24",
           borderWidth: 2,
         },
       ],
     },
     options: {
       maintainAspectRatio: false,
-      plugins: { legend: { position: "bottom", labels: { color: "#94a3b8", font: { size: 11 } } } },
+      plugins: { legend: { position: "bottom", labels: { color: "#8d909b", font: { size: 11 } } } },
     },
   });
 
@@ -1539,8 +1567,8 @@ function renderServiceCoverageSummary(s) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: "#94a3b8" }, grid: { display: false } },
-        y: { ticks: { color: "#94a3b8" }, grid: { color: "#1e293b" } },
+        x: { ticks: { color: "#8d909b" }, grid: { display: false } },
+        y: { ticks: { color: "#8d909b" }, grid: { color: "#434750" } },
       },
     },
   });
@@ -1647,13 +1675,13 @@ function metricRow(m, { highlight = false } = {}) {
         <p class="text-sm font-${highlight ? "semibold text-primary" : "medium"}">${m.label}</p>
         <p class="text-on-surface-variant text-[11px] mt-0.5">${m.note}</p>
       </td>
-      <td class="px-5 py-3 text-center text-sm font-mono">${F4(m.pairwise_precision)}</td>
-      <td class="px-5 py-3 text-center text-sm font-mono">${F4(m.pairwise_recall)}</td>
+      <td class="px-5 py-3 text-center text-sm font-mono tabular-nums">${F4(m.pairwise_precision)}</td>
+      <td class="px-5 py-3 text-center text-sm font-mono tabular-nums">${F4(m.pairwise_recall)}</td>
       <td class="px-5 py-3 text-center text-sm font-mono font-semibold ${highlight ? "text-primary" : ""}">${F4(m.pairwise_f1)}</td>
-      <td class="px-5 py-3 text-center text-sm font-mono">${F4(m.adjusted_rand_index)}</td>
+      <td class="px-5 py-3 text-center text-sm font-mono tabular-nums">${F4(m.adjusted_rand_index)}</td>
       <td class="px-5 py-3 text-center text-sm">${INT.format(m.exactly_resolved)}</td>
-      <td class="px-5 py-3 text-center text-sm ${m.over_split_citizens ? "text-amber-400" : "text-on-surface-variant"}">${INT.format(m.over_split_citizens)}</td>
-      <td class="px-5 py-3 text-center text-sm ${m.over_merged_clusters ? "text-red-400" : "text-on-surface-variant"}">${INT.format(m.over_merged_clusters)}</td>
+      <td class="px-5 py-3 text-center text-sm ${m.over_split_citizens ? "text-warning" : "text-on-surface-variant"}">${INT.format(m.over_split_citizens)}</td>
+      <td class="px-5 py-3 text-center text-sm ${m.over_merged_clusters ? "text-error" : "text-on-surface-variant"}">${INT.format(m.over_merged_clusters)}</td>
     </tr>`;
 }
 
@@ -1680,7 +1708,7 @@ function renderSweepNotes(sweep) {
         `A threshold of ${best.threshold} scores better than the configured ${current.threshold}`,
         `F1 rises from ${F4(current.pairwise_f1)} to ${F4(best.pairwise_f1)}, and over-merged clusters fall from
          ${current.over_merged_clusters} to ${best.over_merged_clusters}.`,
-        "text-amber-400"
+        "text-warning"
       )
     );
   } else if (current) {
@@ -1776,7 +1804,7 @@ function renderBenchmark(benchmark) {
       (l) => `
       <tr class="hover:bg-surface-container-high/40 transition-colors">
         <td class="px-4 py-3 text-sm font-medium">${NOISE_LEVEL_LABELS[l.noise_level] ?? l.noise_level}</td>
-        <td class="px-4 py-3 text-center text-sm font-mono">${F4(l.splink_f1)}</td>
+        <td class="px-4 py-3 text-center text-sm font-mono tabular-nums">${F4(l.splink_f1)}</td>
         <td class="px-4 py-3 text-center text-sm font-mono text-on-surface-variant">${F4(l.baseline_f1)}</td>
         <td class="px-4 py-3 text-center text-sm font-mono font-semibold text-primary">+${F4(l.f1_advantage)}</td>
       </tr>`
@@ -1831,9 +1859,9 @@ function renderDetectors(comparison) {
           <p class="text-sm font-${isBest ? "semibold text-primary" : "medium"}">${d.label}</p>
           <p class="text-on-surface-variant text-[11px] mt-0.5">${d.note}</p>
         </td>
-        <td class="px-5 py-3 text-center text-sm font-mono">${F4(d.average_precision)}</td>
-        <td class="px-5 py-3 text-center text-sm font-mono">${F4(d.precision_at_k)}</td>
-        <td class="px-5 py-3 text-center text-sm font-mono">${F4(d.recall_at_k)}</td>
+        <td class="px-5 py-3 text-center text-sm font-mono tabular-nums">${F4(d.average_precision)}</td>
+        <td class="px-5 py-3 text-center text-sm font-mono tabular-nums">${F4(d.precision_at_k)}</td>
+        <td class="px-5 py-3 text-center text-sm font-mono tabular-nums">${F4(d.recall_at_k)}</td>
         <td class="px-5 py-3 text-center text-sm font-semibold ${d.lift_over_random >= 2 ? "text-primary" : "text-on-surface-variant"}">${d.lift_over_random}x</td>
       </tr>`;
     })

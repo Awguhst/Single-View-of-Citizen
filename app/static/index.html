@@ -6,104 +6,147 @@
 <title>CitizenLink | Single View of Citizen</title>
 <link rel="icon" href="data:," />
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script id="tailwind-config">
+  // Material 3 dark scheme. Every key below is a role, not a colour name, so
+  // markup refers to `surface-container-high` rather than a hex - which is why
+  // retheming the whole app is a change to this block plus the CSS beneath it.
+  //
+  // Three roles are additions, because the supplied palette has no green or
+  // amber and the app needs both:
+  //   success / warning - "Normal" vs "worth a look" states, and the
+  //     over-split (amber) vs over-merge (red) distinction on the Evaluation
+  //     page, where collapsing two different failure modes into one colour
+  //     would lose the point of reporting them separately.
+  //   Both are mixed to the same tone as the supplied accents (light, low
+  //     chroma, ~80 lightness) so they read as part of the family rather than
+  //     bolted on.
   tailwind.config = {
     darkMode: "class",
     theme: {
       extend: {
         colors: {
-          // - existing keys, kept (existing markup depends on these names) ---
-          // Cybercrime.bg-inspired navy/slate + electric-blue palette.
-          background: "#020617",
-          surface: "#0f172a",
-          "surface-container": "#1e293b",
-          "surface-container-high": "#334155",
-          card: "#0f172a",
-          border: "#334155",
-          primary: "#47a8f6",
-          "primary-dark": "#0055ff",
-          accent: "#ff0000",
-          "on-surface": "#e2e8f0",
-          "on-surface-variant": "#94a3b8",
+          background: "#121318",
+          "on-background": "#e3e1e9",
 
-          // - additive Material 3 tokens (same seed color/theme) ---
-          "primary-container": "#0055ff",
-          "on-primary": "#ffffff",
-          "on-primary-container": "#ffffff",
-          "on-primary-fixed": "#00133d",
-          "on-primary-fixed-variant": "#003ea8",
-          "primary-fixed": "#cfe4ff",
-          "primary-fixed-dim": "#47a8f6",
-          "inverse-primary": "#0055ff",
-          "surface-tint": "#47a8f6",
+          surface: "#121318",
+          "surface-dim": "#121318",
+          "surface-bright": "#38393e",
+          "surface-container-lowest": "#0d0e13",
+          "surface-container-low": "#1a1b20",
+          "surface-container": "#1e1f24",
+          "surface-container-high": "#292a2f",
+          "surface-container-highest": "#34343a",
+          "surface-variant": "#34343a",
+          "surface-tint": "#aac7ff",
+          "on-surface": "#e3e1e9",
+          "on-surface-variant": "#c3c6d2",
+          "inverse-surface": "#e3e1e9",
+          "inverse-on-surface": "#2f3035",
 
-          secondary: "#94a3b8",
-          "on-secondary": "#0f172a",
-          "secondary-container": "#334155",
-          "on-secondary-container": "#cbd5e1",
-          "secondary-fixed": "#cbd5e1",
-          "secondary-fixed-dim": "#94a3b8",
-          "on-secondary-fixed-variant": "#334155",
+          outline: "#8d909b",
+          "outline-variant": "#434750",
 
-          tertiary: "#38bdf8",
-          "on-tertiary": "#00293d",
-          "tertiary-container": "#075985",
-          "on-tertiary-container": "#e0f2fe",
-          "tertiary-fixed": "#bae6fd",
-          "tertiary-fixed-dim": "#38bdf8",
-          "on-tertiary-fixed": "#001f2e",
-          "on-tertiary-fixed-variant": "#0c4a6e",
+          primary: "#bdd2ff",
+          "on-primary": "#002f64",
+          "primary-container": "#8fb7ff",
+          "on-primary-container": "#154787",
+          "inverse-primary": "#335ea0",
+          "primary-fixed": "#d6e3ff",
+          "primary-fixed-dim": "#aac7ff",
+          "on-primary-fixed": "#001b3e",
+          "on-primary-fixed-variant": "#144686",
 
-          error: "#f87171",
-          "on-error": "#450a0a",
-          "error-container": "#7f1d1d",
-          "on-error-container": "#fecaca",
+          secondary: "#cfbdff",
+          "on-secondary": "#362465",
+          "secondary-container": "#4f3e80",
+          "on-secondary-container": "#c1adf8",
+          "secondary-fixed": "#e8ddff",
+          "secondary-fixed-dim": "#cfbdff",
+          "on-secondary-fixed": "#210b4f",
+          "on-secondary-fixed-variant": "#4d3c7d",
 
-          outline: "#475569",
-          "outline-variant": "#1e293b",
-          "surface-variant": "#1e293b",
-          "surface-dim": "#020617",
-          "surface-bright": "#334155",
-          "surface-container-lowest": "#020617",
-          "surface-container-low": "#1e293b",
-          "surface-container-highest": "#475569",
-          "inverse-surface": "#e2e8f0",
-          "inverse-on-surface": "#1e293b",
+          tertiary: "#f4c3e6",
+          "on-tertiary": "#462540",
+          "tertiary-container": "#d7a8ca",
+          "on-tertiary-container": "#603b57",
+          "tertiary-fixed": "#ffd7f2",
+          "tertiary-fixed-dim": "#e8b8da",
+          "on-tertiary-fixed": "#2f102a",
+          "on-tertiary-fixed-variant": "#5f3b57",
+
+          error: "#ffb4ab",
+          "on-error": "#690005",
+          "error-container": "#93000a",
+          "on-error-container": "#ffdad6",
+
+          // Additions - see the note above.
+          success: "#a8d8b6",
+          "on-success": "#00391d",
+          "success-container": "#1f4e32",
+          "on-success-container": "#c4eed1",
+          warning: "#f0c485",
+          "on-warning": "#452b00",
+          "warning-container": "#634100",
+          "on-warning-container": "#ffddb3",
+
+          // Legacy aliases. Existing markup still references these names;
+          // they now point at the role they always meant.
+          card: "#1e1f24",
+          border: "#434750",
+          "primary-dark": "#8fb7ff",
+          accent: "#f4c3e6",
         },
         fontFamily: {
-          sans: ["Montserrat", "sans-serif"],
-          "body-md": ["Montserrat"],
-          "body-lg": ["Montserrat"],
-          "display-lg": ["Montserrat"],
-          "display-lg-mobile": ["Montserrat"],
-          "headline-md": ["Montserrat"],
-          "title-lg": ["Montserrat"],
-          "numeric-data": ["Montserrat"],
-          "label-caps": ["Montserrat"],
+          // Inter carries the data - it stays legible at 11-12px inside dense
+          // tables, which is most of this app.
+          sans: ["Inter", "system-ui", "sans-serif"],
+          // Hanken Grotesk for headings and branding.
+          display: ["Hanken Grotesk", "Inter", "sans-serif"],
+          // JetBrains Mono for citizen ids, record ids, dates and metrics -
+          // anything meant to be read as a value rather than prose.
+          mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+          "body-md": ["Inter", "sans-serif"],
+          "body-lg": ["Inter", "sans-serif"],
+          "display-lg": ["Hanken Grotesk", "sans-serif"],
+          "headline-lg": ["Hanken Grotesk", "sans-serif"],
+          "headline-md": ["Hanken Grotesk", "sans-serif"],
+          "title-lg": ["Hanken Grotesk", "sans-serif"],
+          "numeric-data": ["JetBrains Mono", "monospace"],
+          "label-mono": ["JetBrains Mono", "monospace"],
+          "label-caps": ["Hanken Grotesk", "sans-serif"],
         },
         fontSize: {
-          "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
-          "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+          "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+          "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+          "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
           "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
-          "display-lg-mobile": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
-          "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+          "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600" }],
+          "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
           "title-lg": ["20px", { lineHeight: "28px", fontWeight: "600" }],
           "numeric-data": ["18px", { lineHeight: "24px", fontWeight: "500" }],
-          "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
+          "label-mono": ["13px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }],
+          "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.08em", fontWeight: "700" }],
         },
         spacing: {
           gutter: "24px",
+          margin: "32px",
           "card-gap": "16px",
-          base: "8px",
-          "desktop-max-width": "1440px",
+          base: "4px",
+          "density-high": "8px",
+          "density-medium": "16px",
           "container-padding": "32px",
         },
+        maxWidth: {
+          container: "1600px",
+        },
         borderRadius: {
-          DEFAULT: "0.25rem",
-          lg: "0.75rem",
-          xl: "1rem",
+          sm: "0.25rem",
+          DEFAULT: "0.5rem",
+          md: "0.75rem",
+          lg: "1rem",
+          xl: "1.5rem",
           "2xl": "1.5rem",
           // "full" intentionally omitted - keep Tailwind's true-circle default
           // (9999px) so avatar circles / legend dots stay round.
@@ -116,35 +159,99 @@
   };
 </script>
 <style>
-  body { background-color: #020617; color: #e2e8f0; font-family: 'Montserrat', sans-serif; }
+  /* Depth here is tonal, not shadow-driven: each layer is a slightly lighter
+     surface, and "elevation" reads as luminosity plus a soft primary-tinted
+     glow rather than a directional drop shadow. */
+  body { background-color: #121318; color: #e3e1e9; font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+  /* Headings take Hanken Grotesk automatically, so the hundreds of existing
+     h2/h3 tags pick up the display face without touching the markup. */
+  h1, h2, h3, h4, .font-display { font-family: 'Hanken Grotesk', 'Inter', sans-serif; letter-spacing: -0.01em; }
+
+  /* Uppercase micro-labels (table headers, KPI captions) are a distinct role
+     in this system - tight, bold, widely tracked. */
+  .tracking-wider { letter-spacing: 0.08em; }
+
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 24; font-size: 20px; vertical-align: middle; }
-  .entity-card { background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(16px); border: 1px solid rgba(71, 168, 246, 0.15); transition: all .3s ease; }
-  .entity-card:hover { border-color: rgba(71, 168, 246, 0.4); box-shadow: 0 0 30px rgba(71, 168, 246, 0.12); transform: translateY(-2px); }
-  .nav-link.active { color: #47a8f6; background: rgba(71, 168, 246, 0.1); border-right: 3px solid #47a8f6; }
-  .nav-link:not(.active):hover { background-color: #1e293b; }
+
+  /* Level 1. The inset top highlight is the "light catch" that defines the
+     curve against the void background; without it a dark card on a dark page
+     loses its top edge entirely. */
+  .entity-card {
+    background: rgba(30, 31, 36, 0.72);
+    backdrop-filter: blur(12px);
+    border: 1px solid #434750;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: border-color .3s ease, box-shadow .3s ease, transform .3s ease;
+  }
+  .entity-card:hover {
+    border-color: rgba(189, 210, 255, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 40px rgba(170, 199, 255, 0.10);
+    transform: translateY(-2px);
+  }
+
+  .nav-link.active { color: #bdd2ff; background: rgba(189, 210, 255, 0.10); border-right: 3px solid #bdd2ff; }
+  .nav-link:not(.active):hover { background-color: #1e1f24; }
   .nav-link.active .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 350, 'GRAD' 0, 'opsz' 24; }
+
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #020617; }
-  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-  .skeleton { background: linear-gradient(90deg, #0f172a 25%, #1e293b 50%, #0f172a 75%); background-size: 200% 100%; animation: loading 1.4s infinite; }
+  ::-webkit-scrollbar-track { background: #0d0e13; }
+  ::-webkit-scrollbar-thumb { background: #434750; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #8d909b; }
+
+  .skeleton { background: linear-gradient(90deg, #1a1b20 25%, #292a2f 50%, #1a1b20 75%); background-size: 200% 100%; animation: loading 1.4s infinite; }
   @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
   .view { display: none; }
   .view.active { display: block; }
-  .badge { display: inline-block; white-space: nowrap; font-size: 10px; padding: 2px 8px; border-radius: 9999px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; }
+
+  /* Utility elements stay square-ish (4px) so they read as annotations rather
+     than as structure. */
+  .badge { display: inline-block; white-space: nowrap; font-family: 'Hanken Grotesk', sans-serif; font-size: 10px; padding: 2px 8px; border-radius: 9999px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
   .toast { transition: opacity .3s ease, transform .3s ease; }
+
   details > summary { list-style: none; }
   details > summary::-webkit-details-marker { display: none; }
   details > summary::marker { display: none; }
-  .btn-primary { background: linear-gradient(135deg, #47a8f6, #0055ff); color: #fff; border-radius: 9999px; transition: all .3s ease; box-shadow: 0 0 0 rgba(71,168,246,0); }
-  .btn-primary:hover { filter: brightness(1.1); box-shadow: 0 0 20px rgba(71,168,246,0.4); }
-  .btn-outline { border: 1px solid #334155; border-radius: 9999px; transition: all .3s ease; }
-  .btn-outline:hover { border-color: #47a8f6; background: rgba(71,168,246,0.08); box-shadow: 0 0 15px rgba(71,168,246,0.15); }
+
+  /* The brief asks for a primary->secondary gradient. It also asks for white
+     label text, which was written for a palette with saturated accents - on
+     this one both stops are pastels (#bdd2ff, #cfbdff) and white would be
+     unreadable. `on-primary` is the role the palette provides for exactly
+     this, and gives ~11:1 contrast. */
+  .btn-primary {
+    background: linear-gradient(135deg, #bdd2ff, #cfbdff);
+    color: #002f64;
+    font-weight: 600;
+    border-radius: 9999px;
+    transition: filter .3s ease, box-shadow .3s ease;
+  }
+  .btn-primary:hover { filter: brightness(1.06); box-shadow: 0 0 24px rgba(170, 199, 255, 0.35); }
+  .btn-primary:disabled { filter: none; box-shadow: none; }
+
+  .btn-outline { border: 1px solid #434750; border-radius: 9999px; color: #c3c6d2; transition: all .3s ease; }
+  .btn-outline:hover { border-color: #bdd2ff; color: #bdd2ff; background: rgba(189, 210, 255, 0.08); box-shadow: 0 0 18px rgba(170, 199, 255, 0.12); }
+
+  /* Inputs sit on the void, not on the card, so they read as wells. */
+  input[type="text"], input[type="number"], input[type="search"] {
+    background-color: #0d0e13;
+    border-color: #434750;
+    border-radius: 0.5rem;
+    color: #e3e1e9;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  input[type="text"]:focus, input[type="number"]:focus, input[type="search"]:focus {
+    border-color: #bdd2ff;
+    box-shadow: 0 0 0 2px rgba(189, 210, 255, 0.25);
+    outline: none;
+  }
+  ::placeholder { color: #8d909b; }
 </style>
 </head>
 <body class="flex min-h-screen">
 
 <div id="app-shell" class="w-full">
-<aside class="h-screen w-64 fixed left-0 top-0 bg-surface/80 backdrop-blur-xl border-r border-outline-variant flex flex-col py-6 z-50">
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container-low/80 backdrop-blur-xl border-r border-outline-variant flex flex-col py-6 z-50">
   <div class="px-6 pb-6">
     <h1 class="text-xl font-bold text-primary">CitizenLink</h1>
     <p class="text-on-surface-variant text-sm">Single View of Citizen</p>
@@ -175,8 +282,8 @@
 </aside>
 
 <main class="ml-64 flex-1 flex flex-col min-w-0">
-  <header class="flex justify-between items-center w-full px-8 h-16 bg-surface/80 backdrop-blur-xl border-b border-outline-variant sticky top-0 z-40 gap-6">
-    <div class="relative max-w-md w-full flex items-center bg-surface-container-low border border-outline-variant rounded-lg px-1">
+  <header class="flex justify-between items-center w-full px-8 h-16 bg-surface-container-low/80 backdrop-blur-xl border-b border-outline-variant sticky top-0 z-40 gap-6">
+    <div class="relative max-w-md w-full flex items-center bg-surface-container-lowest border border-outline-variant rounded-lg px-1">
       <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
       <input id="search-input" type="text" placeholder="Search resolved citizens, e.g. 'john smith'"
         class="w-full bg-transparent border-none pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-0 transition-colors" />
@@ -204,7 +311,7 @@
   <div class="p-8 w-full space-y-6">
 
     <!-- OVERVIEW -->
-    <section id="view-dashboard" class="view active space-y-6 max-w-[1440px] mx-auto w-full">
+    <section id="view-dashboard" class="view active space-y-6 max-w-container mx-auto w-full">
       <div>
         <h2 class="text-2xl font-bold text-on-surface">Overview</h2>
         <p class="text-on-surface-variant text-sm">Resolved citizen identities and government service participation across all agencies</p>
@@ -309,7 +416,7 @@
     </section>
 
     <!-- REVIEW QUEUE -->
-    <section id="view-review" class="view space-y-6 max-w-[1440px] mx-auto w-full">
+    <section id="view-review" class="view space-y-6 max-w-container mx-auto w-full">
       <div class="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h2 class="text-2xl font-bold text-on-surface">Review Queue</h2>
@@ -402,7 +509,7 @@
     </section>
 
     <!-- EVALUATION -->
-    <section id="view-evaluation" class="view space-y-6 max-w-[1440px] mx-auto w-full">
+    <section id="view-evaluation" class="view space-y-6 max-w-container mx-auto w-full">
       <div>
         <h2 class="text-2xl font-bold text-on-surface">Model Evaluation</h2>
         <p class="text-on-surface-variant text-sm">
@@ -558,7 +665,7 @@
     </section>
 
     <!-- PROFILE (sub-page, opened from any list) -->
-    <section id="view-profile" class="view space-y-6 max-w-[1440px] mx-auto w-full">
+    <section id="view-profile" class="view space-y-6 max-w-container mx-auto w-full">
       <button id="btn-back-directory" class="flex items-center gap-1 text-sm text-on-surface-variant hover:text-primary transition-colors">
         <span class="material-symbols-outlined text-base">arrow_back</span> <span id="btn-back-directory-label">Back to Directory</span>
       </button>
@@ -571,7 +678,7 @@
 </div>
 
 <!-- ENGAGEMENT TIER DRILL-DOWN MODAL -->
-<div id="tier-drilldown-overlay" class="hidden fixed inset-0 z-[90] flex items-center justify-center bg-background/80 backdrop-blur-sm px-4 py-8">
+<div id="tier-drilldown-overlay" class="hidden fixed inset-0 z-[90] flex items-center justify-center bg-surface-container-lowest/80 backdrop-blur-md px-4 py-8">
   <div class="entity-card rounded-lg w-full max-w-5xl max-h-full flex flex-col overflow-hidden">
     <div class="p-6 border-b border-border flex justify-between items-start gap-4 shrink-0">
       <div>
