@@ -1143,34 +1143,55 @@ function anomalyFactors(factors) {
   if (!factors || !factors.length) {
     return `<span class="text-xs text-on-surface-variant">-</span>`;
   }
-  return `<div class="flex flex-wrap gap-1">${factors
-    .map(
-      (f) => `
-      <span class="text-[10px] px-2 py-0.5 rounded border border-outline-variant/40 text-on-surface-variant"
-            title="Neutralising this feature lowers the anomaly score by ${f.contribution}">
-        ${f.label}: <span class="font-medium text-on-surface">${f.value}</span>
-        ${f.direction === "at" ? "" : `<span class="text-[9px]">(${f.direction} ${f.population_median})</span>`}
-      </span>`
-    )
-    .join("")}</div>`;
+  // Three chips wrapped to three lines and made row heights ragged. The lead
+  // factor is the one that carries the flag, so it is shown in full and the
+  // rest collapse into a count - the whole list stays one hover away, and the
+  // rows stay a uniform single line.
+  const [lead, ...rest] = factors;
+  const full = factors
+    .map((f) => `${f.label}: ${f.value} (${f.direction} median ${f.population_median})`)
+    .join(" | ");
+  const more = rest.length
+    ? `<span class="text-[10px] px-1.5 py-0.5 rounded-sm text-on-surface-variant whitespace-nowrap">+${rest.length}</span>`
+    : "";
+  return `<span class="inline-flex items-center gap-1 whitespace-nowrap cursor-help" title="${full}">
+      <span class="text-[10px] px-2 py-0.5 rounded border border-outline-variant/40 text-on-surface-variant whitespace-nowrap">
+        ${lead.label}: <span class="font-medium text-on-surface">${lead.value}</span>
+      </span>${more}
+    </span>`;
 }
 
 // The reviewable half of the explanation. Where the model's reasons say what
 // it reacted to, these are the actual disagreeing values in the cluster - the
 // thing a caseworker can adjudicate.
+// Short field names for the table. The full values live in the tooltip and on
+// the citizen's profile - a scanning reviewer needs to know *which* field
+// disagrees and how badly, not to read two postcodes side by side in a 9rem
+// column. Rendering them inline previously stacked one block per field and
+// ran the values together ("2005-03-072005-07-03"), which was both two lines
+// tall and ambiguous about where one value ended.
+const CONFLICT_SHORT_LABELS = {
+  date_of_birth: "DOB",
+  postcode: "postcode",
+  first_name: "name",
+};
+
 function conflictCells(conflicts) {
   if (!conflicts || !conflicts.length) {
-    return `<span class="text-xs text-on-surface-variant">No conflicting values</span>`;
+    return `<span class="text-xs text-on-surface-variant">None</span>`;
   }
-  return conflicts
+  const detail = conflicts
+    .map((c) => `${c.label}: ${c.values.join("  vs  ")}`)
+    .join(" | ");
+  const chips = conflicts
     .map(
-      (c) => `
-      <div class="text-xs mb-1 last:mb-0">
-        <span class="text-on-surface-variant">${c.label}:</span>
-        ${c.values.map((v) => `<span class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-error/10 text-error ml-1">${v}</span>`).join("")}
-      </div>`
+      (c) =>
+        `<span class="text-[10px] font-medium px-1.5 py-0.5 rounded-sm bg-error/10 text-error whitespace-nowrap">${
+          CONFLICT_SHORT_LABELS[c.field] ?? c.label
+        } x${c.values.length}</span>`
     )
     .join("");
+  return `<span class="inline-flex items-center gap-1.5 whitespace-nowrap cursor-help" title="${detail}">${chips}</span>`;
 }
 
 function anomalyStatusBadge(status) {
@@ -1277,8 +1298,8 @@ async function loadReviewQueue() {
       <td class="px-4 py-3 font-medium whitespace-nowrap">${r.preferred_name}</td>
       <td class="px-3 py-3 text-center font-mono tabular-nums">${r.agency_count}</td>
       <td class="px-3 py-3 text-center font-mono tabular-nums">${r.record_count}</td>
-      <td class="px-4 py-3 min-w-[13rem]">${anomalyFactors(r.top_factors)}</td>
-      <td class="px-4 py-3 min-w-[9rem]">${conflictCells(r.conflicts)}</td>
+      <td class="px-4 py-3">${anomalyFactors(r.top_factors)}</td>
+      <td class="px-4 py-3">${conflictCells(r.conflicts)}</td>
       <td class="px-3 py-3 text-center font-mono tabular-nums font-semibold">${r.anomaly_score.toFixed(1)}</td>
       <td class="px-3 py-3 text-center">
         <button class="view-anomaly-profile text-on-surface-variant hover:text-primary" data-id="${r.master_citizen_id}">
